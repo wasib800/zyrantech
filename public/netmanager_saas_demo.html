@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NetManager Pro — ISP SaaS Platform</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsbarcode/3.11.6/JsBarcode.all.min.js"></script>
+<style>
+:root{--bg:#060d1a;--bg2:#0a1220;--bg3:#0f1b30;--card:#111d35;--card2:#162038;--border:#1a2d4a;--border2:#203656;--text:#eef2fc;--text2:#7a90b8;--text3:#445c80;--blue:#3b82f6;--blue2:#1d4ed8;--blue3:#0c1a3a;--green:#10b981;--green2:#042314;--amber:#f59e0b;--amber2:#2a1800;--red:#ef4444;--red2:#2a0808;--purple:#8b5cf6;--purple2:#1a0f35;--teal:#14b8a6;--teal2:#042520;--cyan:#06b6d4;--pink:#ec4899;--sw:228px;--hdr:52px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;overflow-x:hidden}
+
+/* LOGIN */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,var(--bg) 0%,#0a1628 50%,var(--bg) 100%)}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2.5rem;width:380px;box-shadow:0 25px 50px rgba(0,0,0,.5)}
+.login-logo{text-align:center;margin-bottom:2rem}
+.login-logo .icon{width:56px;height:56px;background:linear-gradient(135deg,var(--blue2),var(--blue));border-radius:14px;display:inline-flex;align-items:center;justify-content:center;font-size:26px;color:#fff;margin-bottom:.875rem}
+.login-logo h1{font-size:20px;font-weight:700;color:var(--text)}
+.login-logo p{font-size:12px;color:var(--text3);margin-top:3px}
+.lf-group{margin-bottom:1rem}
+.lf-label{font-size:11px;font-weight:500;color:var(--text2);margin-bottom:5px;display:block}
+.lf-input{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px 12px;color:var(--text);font-size:12.5px;outline:none;transition:border-color .15s}
+.lf-input:focus{border-color:var(--blue)}
+.btn-login{width:100%;background:linear-gradient(135deg,var(--blue2),var(--blue));border:none;border-radius:8px;padding:11px;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:opacity .15s;margin-top:.5rem}
+.btn-login:hover{opacity:.9}
+.login-hint{text-align:center;margin-top:1rem;font-size:11px;color:var(--text3)}
+.login-hint span{color:var(--blue)}
+
+/* APP LAYOUT */
+.app{display:none;min-height:100vh}
+.app.show{display:flex}
+.sidebar{width:var(--sw);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;z-index:100;overflow-y:auto;transition:transform .25s}
+.sl{padding:1rem 1rem .875rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px}
+.sl-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--blue2),var(--blue));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:16px;color:#fff;flex-shrink:0}
+.sl-name{font-size:13px;font-weight:700;color:var(--text)}
+.sl-ver{font-size:9px;color:var(--text3)}
+.nl{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--text3);text-transform:uppercase;padding:.6rem 1rem .25rem}
+.ni{display:flex;align-items:center;gap:8px;padding:.45rem 1rem;font-size:11.5px;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .12s;position:relative}
+.ni:hover{color:var(--text);background:rgba(59,130,246,.07)}
+.ni.active{color:var(--blue);background:rgba(59,130,246,.1);border-left-color:var(--blue)}
+.ni i{font-size:14px;width:16px;flex-shrink:0}
+.nb{margin-left:auto;font-size:9px;font-weight:700;padding:1px 6px;border-radius:8px;min-width:18px;text-align:center}
+.nb.red{background:var(--red);color:#fff}
+.nb.green{background:var(--green);color:#fff}
+.nb.amber{background:var(--amber);color:#000}
+.sf{margin-top:auto;padding:.875rem 1rem;border-top:1px solid var(--border)}
+.ua{display:flex;align-items:center;gap:8px}
+.uav{width:28px;height:28px;border-radius:50%;background:var(--blue2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+
+/* MAIN */
+.main{margin-left:var(--sw);flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg2);border-bottom:1px solid var(--border);height:var(--hdr);display:flex;align-items:center;padding:0 1.25rem;gap:10px;position:sticky;top:0;z-index:50}
+.tb-title{font-size:14px;font-weight:700;color:var(--text);flex:1}
+.tb-right{display:flex;align-items:center;gap:7px}
+.tbb{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;font-size:10.5px;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);white-space:nowrap}
+.tbb:hover{color:var(--text);background:var(--card)}
+.tbb.al{background:rgba(239,68,68,.12);border-color:rgba(239,68,68,.3);color:var(--red)}
+.tbb.wn{background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.3);color:var(--amber)}
+.tbb.pr{background:var(--blue2);color:#fff;border-color:var(--blue2)}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.content{padding:1.1rem;flex:1}
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:1rem}
+.sg8{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:1rem}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8rem .95rem;position:relative;overflow:hidden;transition:all .2s;cursor:pointer}
+.sc:hover{border-color:var(--border2);transform:translateY(-1px)}
+.sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:10px 10px 0 0}
+.cb::before{background:var(--blue)}.cg::before{background:var(--green)}.ca::before{background:var(--amber)}.cr::before{background:var(--red)}.cp::before{background:var(--purple)}.ct::before{background:var(--teal)}.cc::before{background:var(--cyan)}.ck::before{background:var(--pink)}
+.st{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.35rem}
+.si{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.str{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:600}
+.su{background:rgba(16,185,129,.15);color:var(--green)}.sd{background:rgba(239,68,68,.15);color:var(--red)}.sf2{background:rgba(100,130,180,.1);color:var(--text2)}
+.sv{font-size:22px;font-weight:700;color:var(--text);line-height:1;margin-bottom:2px}
+.sl2{font-size:9.5px;color:var(--text2)}
+.sbar{height:2px;border-radius:1px;margin-top:.55rem;background:var(--border)}
+.sbf{height:100%;border-radius:1px}
+
+/* GRID LAYOUTS */
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:1rem}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:1rem}
+.g21{display:grid;grid-template-columns:2fr 1fr;gap:9px;margin-bottom:1rem}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.8rem .95rem}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:.65rem;padding-bottom:.6rem;border-bottom:1px solid var(--border)}
+.ct{font-size:11.5px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px}
+.ct i{font-size:13px}
+.ca{font-size:10px;color:var(--blue);cursor:pointer;display:flex;align-items:center;gap:3px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:10.5px}
+.tbl th{text-align:left;padding:0 .55rem .45rem;color:var(--text3);font-size:9px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+.tbl td{padding:.5rem .55rem;border-bottom:1px solid rgba(26,45,74,.6);color:var(--text2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:rgba(59,130,246,.03)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;gap:3px}
+.bg{background:rgba(16,185,129,.15);color:var(--green)}
+.br{background:rgba(239,68,68,.15);color:var(--red)}
+.ba{background:rgba(245,158,11,.15);color:var(--amber)}
+.bb{background:rgba(59,130,246,.15);color:var(--blue)}
+.bp{background:rgba(139,92,246,.15);color:var(--purple)}
+.bgr{background:rgba(100,130,180,.1);color:var(--text2)}
+.bt{background:rgba(20,184,166,.15);color:var(--teal)}
+
+/* MISC */
+.av{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0}
+.ri{display:flex;align-items:center;gap:8px;padding:.5rem 0;border-bottom:1px solid rgba(26,45,74,.5)}
+.ri:last-child{border-bottom:none}
+.ti{display:flex;align-items:flex-start;gap:8px;padding:.55rem 0;border-bottom:1px solid rgba(26,45,74,.5)}
+.ti:last-child{border-bottom:none}
+.tic{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.or{display:flex;align-items:center;gap:8px;padding:.5rem 0;border-bottom:1px solid rgba(26,45,74,.5)}
+.or:last-child{border-bottom:none}
+.od{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mr{display:flex;align-items:center;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid rgba(26,45,74,.5);font-size:10.5px}
+.mr:last-child{border-bottom:none}
+.ml{color:var(--text2);display:flex;align-items:center;gap:5px}
+.mv{font-weight:700;color:var(--text)}
+.ms{text-align:center;padding:.5rem;background:var(--bg3);border-radius:7px}
+.ms .n{font-size:17px;font-weight:700}.ms .l{font-size:9px;color:var(--text2);margin-top:1px}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.875rem}
+.sh h2{font-size:14px;font-weight:700;color:var(--text)}
+.fi{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-size:11px;outline:none;transition:border-color .15s}
+.fi:focus{border-color:var(--blue)}
+.fs{background:var(--bg3);border:1px solid var(--border2);border-radius:6px;padding:6px 8px;color:var(--text);font-size:11px;outline:none}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-p{background:var(--blue2);color:#fff}.btn-p:hover{background:var(--blue)}
+.btn-g{background:var(--bg3);border:1px solid var(--border2);color:var(--text2)}.btn-g:hover{color:var(--text)}
+.btn-s{background:rgba(16,185,129,.2);border:1px solid rgba(16,185,129,.3);color:var(--green)}
+.btn-d{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.25);color:var(--red)}
+.btn-a{background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.25);color:var(--amber)}
+.srch{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;padding:6px 9px;margin-bottom:.875rem}
+.srch input{background:none;border:none;outline:none;color:var(--text);font-size:11px;flex:1}
+.srch i{color:var(--text3);font-size:13px}
+.tg{width:32px;height:17px;border-radius:9px;position:relative;cursor:pointer;transition:background .2s;display:inline-block}
+.tg.on{background:var(--green)}.tg.off{background:var(--border2)}
+.tg::after{content:'';position:absolute;width:11px;height:11px;border-radius:50%;background:#fff;top:3px;transition:left .15s}
+.tg.on::after{left:18px}.tg.off::after{left:3px}
+.pr{height:3px;border-radius:2px;background:var(--border);margin-top:3px}
+.prf{height:100%;border-radius:2px}
+.le{display:flex;align-items:flex-start;gap:8px;padding:.45rem 0;border-bottom:1px solid rgba(26,45,74,.35);font-size:10.5px}
+.le:last-child{border-bottom:none}
+.lt2{color:var(--text3);min-width:65px;flex-shrink:0}
+.ss{display:flex;gap:1px;background:var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.si2{flex:1;background:var(--card);padding:.6rem .8rem;text-align:center}
+.sv2{font-size:14px;font-weight:700}
+.sl3{font-size:9px;color:var(--text3);margin-top:1px}
+.tb-bar{display:flex;gap:3px;margin-bottom:.9rem;background:var(--bg3);padding:3px;border-radius:7px;width:fit-content;flex-wrap:wrap}
+.tab{padding:4px 11px;border-radius:5px;font-size:10.5px;cursor:pointer;color:var(--text2);transition:all .15s}
+.tab.active{background:var(--card);color:var(--text);font-weight:600}
+
+/* AUTOMATION LOG */
+.auto-log{background:var(--bg);border-radius:8px;padding:.75rem;font-family:monospace;font-size:10.5px;max-height:220px;overflow-y:auto}
+.auto-log .entry{padding:.3rem 0;border-bottom:1px solid rgba(26,45,74,.3);display:flex;gap:8px}
+.auto-log .entry:last-child{border-bottom:none}
+.auto-log .time{color:var(--text3);flex-shrink:0;min-width:75px}
+.auto-log .ok{color:var(--green)}.auto-log .warn{color:var(--amber)}.auto-log .err{color:var(--red)}.auto-log .info{color:var(--cyan)}
+
+/* PAYMENT */
+.pay-methods{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem}
+.pay-card{background:var(--card2);border:2px solid var(--border);border-radius:10px;padding:.875rem;text-align:center;cursor:pointer;transition:all .2s}
+.pay-card:hover,.pay-card.selected{border-color:var(--blue);background:var(--blue3)}
+.pay-card i{font-size:24px;margin-bottom:.4rem;display:block}
+.pay-card .pm-name{font-size:11px;font-weight:700;color:var(--text)}
+.pay-card .pm-sub{font-size:9.5px;color:var(--text3);margin-top:2px}
+
+/* NOTIFICATION TOAST */
+.toast-wrap{position:fixed;top:70px;right:1.5rem;z-index:9999;display:flex;flex-direction:column;gap:7px}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.75rem 1rem;display:flex;align-items:flex-start;gap:10px;min-width:280px;max-width:350px;box-shadow:0 10px 30px rgba(0,0,0,.4);animation:slideIn .3s ease;font-size:11.5px}
+@keyframes slideIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+.toast i{font-size:18px;flex-shrink:0;margin-top:1px}
+.toast .t-title{font-weight:700;color:var(--text);margin-bottom:2px}
+.toast .t-msg{color:var(--text2);font-size:10.5px}
+.toast.success{border-left:3px solid var(--green)}
+.toast.error{border-left:3px solid var(--red)}
+.toast.warning{border-left:3px solid var(--amber)}
+.toast.info{border-left:3px solid var(--blue)}
+
+/* NET CANVAS */
+.nc{width:100%;height:300px;background:var(--bg3);border-radius:9px}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5)}
+.modal h3{font-size:15px;font-weight:700;color:var(--text);margin-bottom:1.25rem;display:flex;align-items:center;gap:8px}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.fgr{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:10px;font-weight:600;color:var(--text2)}
+.mf{display:flex;justify-content:flex-end;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border)}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- LOGIN PAGE -->
+<div class="login-wrap" id="loginPage">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="icon"><i class="ti ti-wifi"></i></div>
+      <h1>NetManager Pro</h1>
+      <p>ISP SaaS Management Platform</p>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label">Email Address</label>
+      <input class="lf-input" id="loginEmail" type="email" value="admin@alphanet.com" placeholder="admin@example.com"/>
+    </div>
+    <div class="lf-group">
+      <label class="lf-label">Password</label>
+      <input class="lf-input" id="loginPass" type="password" value="password" placeholder="••••••••"/>
+    </div>
+    <button class="btn-login" onclick="doLogin()">Login to Dashboard</button>
+    <div class="login-hint">Demo: <span>admin@alphanet.com</span> / <span>password</span></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sl">
+      <div class="sl-icon"><i class="ti ti-wifi"></i></div>
+      <div><div class="sl-name">NetManager Pro</div><div class="sl-ver">v2.0 · Alpha Satellite Network</div></div>
+    </div>
+    <div style="padding:.4rem 0">
+      <div class="nl">Overview</div>
+      <div class="ni active" onclick="go('dashboard',this)"><i class="ti ti-layout-dashboard"></i> Dashboard</div>
+      <div class="nl">Clients</div>
+      <div class="ni" onclick="go('clients',this)"><i class="ti ti-users"></i> Client Management</div>
+      <div class="ni" onclick="go('billing',this)"><i class="ti ti-file-invoice"></i> Billing & Payments</div>
+      <div class="nl">Network</div>
+      <div class="ni" onclick="go('mikrotik',this)"><i class="ti ti-server-2"></i> Mikrotik Server</div>
+      <div class="ni" onclick="go('olt',this)"><i class="ti ti-router"></i> OLT Management</div>
+      <div class="ni" onclick="go('oltusers',this)"><i class="ti ti-antenna"></i> OLT Users (ONU) <span class="nb amber">152⚠</span></div>
+      <div class="ni" onclick="go('network',this)"><i class="ti ti-network"></i> Network Diagram</div>
+      <div class="nl">Automation</div>
+      <div class="ni" onclick="go('automation',this)"><i class="ti ti-robot"></i> Automation Engine <span class="nb green">NEW</span></div>
+      <div class="ni" onclick="go('payment',this)"><i class="ti ti-credit-card"></i> Payment Gateway <span class="nb green">NEW</span></div>
+      <div class="ni" onclick="go('sms',this)"><i class="ti ti-message"></i> SMS & Alerts</div>
+      <div class="nl">Operations</div>
+      <div class="ni" onclick="go('tickets',this)"><i class="ti ti-ticket"></i> Support Tickets <span class="nb red">4</span></div>
+      <div class="ni" onclick="go('tasks',this)"><i class="ti ti-clipboard-list"></i> Tasks</div>
+      <div class="ni" onclick="go('pop',this)"><i class="ti ti-topology-ring"></i> POP Management</div>
+      <div class="nl">HR & Finance</div>
+      <div class="ni" onclick="go('attendance',this)"><i class="ti ti-clock"></i> Attendance</div>
+      <div class="ni" onclick="go('hrm',this)"><i class="ti ti-users-group"></i> HRM & Payroll</div>
+      <div class="ni" onclick="go('inventory',this)"><i class="ti ti-package"></i> Inventory + Barcode</div>
+      <div class="ni" onclick="go('accounting',this)"><i class="ti ti-calculator"></i> Accounting</div>
+      <div class="ni" onclick="go('reports',this)"><i class="ti ti-chart-bar"></i> Reports</div>
+    </div>
+    <div class="sf">
+      <div class="ua">
+        <div class="uav">AD</div>
+        <div style="flex:1"><div style="font-size:11px;color:var(--text);font-weight:600">Admin User</div><div style="font-size:9px;color:var(--text3)">Super Admin · v8.2.4</div></div>
+        <i class="ti ti-logout" style="color:var(--text3);font-size:14px;cursor:pointer" onclick="doLogout()"></i>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div class="tb-right">
+        <div class="tbb wn"><i class="ti ti-alert-triangle" style="font-size:11px"></i> Unpaid Invoice</div>
+        <div class="tbb wn"><i class="ti ti-calendar" style="font-size:11px"></i> Bill: 20 Jun 2026</div>
+        <div class="tbb al" onclick="showToast('warning','OLT Alert','OLT-04 Oxygen offline! Auto ticket created.')"><i class="ti ti-router-off" style="font-size:11px"></i> OLT Alert</div>
+        <div class="tbb"><i class="ti ti-ticket" style="font-size:11px"></i> Open Ticket</div>
+        <div class="tbb pr"><i class="ti ti-device-desktop-analytics" style="font-size:11px"></i> Live Monitor</div>
+        <div class="tbb"><i class="ti ti-bell" style="font-size:11px"></i> 12</div>
+      </div>
+    </div>
+    <div class="content">
+
+<!-- ===== DASHBOARD ===== -->
+<div class="page active" id="page-dashboard">
+  <div class="sg">
+    <div class="sc cb" onclick="go('clients',document.querySelector('[onclick*=clients]'))"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-users"></i></div><div class="str su">+30 ▲</div></div><div class="sv" id="d-total">2,335</div><div class="sl2">Total Clients</div><div class="sbar"><div class="sbf" style="width:78%;background:var(--blue)"></div></div></div>
+    <div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-wifi"></i></div><div class="str su" id="d-uptime">71.8%</div></div><div class="sv" id="d-online">1,677</div><div class="sl2">Online (Running)</div><div class="sbar"><div class="sbf" id="d-online-bar" style="width:72%;background:var(--green)"></div></div></div>
+    <div class="sc ca"><div class="st"><div class="si" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="ti ti-cash-off"></i></div><div class="str sd">231 expire</div></div><div class="sv" id="d-unpaid">896</div><div class="sl2">Unpaid Clients</div><div class="sbar"><div class="sbf" style="width:38%;background:var(--amber)"></div></div></div>
+    <div class="sc cr"><div class="st"><div class="si" style="background:rgba(239,68,68,.15);color:var(--red)"><i class="ti ti-ban"></i></div><div class="str sd">Auto blocked</div></div><div class="sv" id="d-blocked">159</div><div class="sl2">Blocked Clients</div></div>
+  </div>
+  <div class="sg">
+    <div class="sc cp"><div class="st"><div class="si" style="background:rgba(139,92,246,.15);color:var(--purple)"><i class="ti ti-cash"></i></div></div><div class="sv">1,295</div><div class="sl2">Paid Clients</div></div>
+    <div class="sc ct"><div class="st"><div class="si" style="background:rgba(20,184,166,.15);color:var(--teal)"><i class="ti ti-hand-stop"></i></div></div><div class="sv">42</div><div class="sl2">Partially Paid</div></div>
+    <div class="sc cc"><div class="st"><div class="si" style="background:rgba(6,182,212,.15);color:var(--cyan)"><i class="ti ti-clock-x"></i></div></div><div class="sv">106</div><div class="sl2">Unpaid Extension</div></div>
+    <div class="sc ck"><div class="st"><div class="si" style="background:rgba(236,72,153,.15);color:var(--pink)"><i class="ti ti-gift"></i></div></div><div class="sv">50</div><div class="sl2">Waiver Clients</div></div>
+  </div>
+  <div class="g21">
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-chart-bar" style="color:var(--blue)"></i> Monthly New Clients</div><div class="ca"><i class="ti ti-download"></i> Export</div></div>
+      <div style="height:185px"><canvas id="growthChart" role="img" aria-label="Monthly clients chart"></canvas></div>
+    </div>
+    <div>
+      <div class="card" style="margin-bottom:9px">
+        <div class="ch"><div class="ct"><i class="ti ti-router" style="color:var(--amber)"></i> OLT Live Status</div><div class="ca"><span class="pulse"></span> Live</div></div>
+        <div class="or"><div class="od" style="background:var(--green)"></div><div style="flex:1;font-size:10.5px;color:var(--text2)">OLT-01 Agrabad</div><span style="font-size:9.5px;color:var(--green)"><span class="pulse"></span> Online -18dBm</span></div>
+        <div class="or"><div class="od" style="background:var(--green)"></div><div style="flex:1;font-size:10.5px;color:var(--text2)">OLT-02 Halishahar</div><span style="font-size:9.5px;color:var(--green)"><span class="pulse"></span> Online -20dBm</span></div>
+        <div class="or"><div class="od" style="background:var(--amber)"></div><div style="flex:1;font-size:10.5px;color:var(--text2)">OLT-03 Nasirabad</div><span style="font-size:9.5px;color:var(--amber)">Warning -27dBm</span></div>
+        <div class="or"><div class="od" style="background:var(--red)"></div><div style="flex:1;font-size:10.5px;color:var(--text2)">OLT-04 Oxygen</div><span style="font-size:9.5px;color:var(--red)">Offline ✕</span></div>
+        <div class="or"><div class="od" style="background:var(--green)"></div><div style="flex:1;font-size:10.5px;color:var(--text2)">OLT-05 Panchlaish</div><span style="font-size:9.5px;color:var(--green)"><span class="pulse"></span> Online -19dBm</span></div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="ct"><i class="ti ti-chart-pie" style="color:var(--purple)"></i> Problem Occurrence</div></div>
+        <div style="height:90px"><canvas id="probChart" role="img" aria-label="Problem chart"></canvas></div>
+        <div style="display:flex;gap:10px;margin-top:5px">
+          <span style="font-size:9px;color:var(--text3)"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--blue);margin-right:3px"></span>Connectivity 50%</span>
+          <span style="font-size:9px;color:var(--text3)"><span style="display:inline-block;width:7px;height:7px;border-radius:2px;background:var(--teal);margin-right:3px"></span>BW Problem 50%</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-ticket" style="color:var(--purple)"></i> Support Tickets</div><div class="ca">View all</div></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:.7rem">
+        <div class="ms"><div class="n" style="color:var(--blue)">3</div><div class="l">Total</div></div>
+        <div class="ms"><div class="n" style="color:var(--amber)">0</div><div class="l">Pending</div></div>
+        <div class="ms"><div class="n" style="color:var(--purple)">3</div><div class="l">Processing</div></div>
+        <div class="ms"><div class="n" style="color:var(--green)">0</div><div class="l">Solved</div></div>
+      </div>
+      <div class="ti"><div class="tic" style="background:rgba(239,68,68,.1)"><i class="ti ti-wifi-off" style="color:var(--red)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Connectivity – Halishahar</div><div style="font-size:9.5px;color:var(--text3)">10 min · High</div></div><div class="badge br">Open</div></div>
+      <div class="ti"><div class="tic" style="background:rgba(245,158,11,.1)"><i class="ti ti-bolt" style="color:var(--amber)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Speed slow – Nasirabad</div><div style="font-size:9.5px;color:var(--text3)">1 hr · High</div></div><div class="badge ba">Processing</div></div>
+      <div class="ti"><div class="tic" style="background:rgba(16,185,129,.1)"><i class="ti ti-check" style="color:var(--green)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Cable cut – Agrabad</div><div style="font-size:9.5px;color:var(--text3)">3 hr · Resolved</div></div><div class="badge bg">Solved</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-server" style="color:var(--cyan)"></i> Device Health</div><div class="ca"><span class="pulse"></span> Live</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-cpu" style="font-size:11px"></i> CPU Core-SW</div><div class="mv" style="color:var(--green)">23%</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-cpu" style="font-size:11px"></i> RAM Core-SW</div><div class="mv" style="color:var(--amber)">67%</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-arrow-down" style="font-size:11px"></i> BW Download</div><div class="mv" style="color:var(--blue)" id="d-bw-dl">8.7 Gbps</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-arrow-up" style="font-size:11px"></i> BW Upload</div><div class="mv" style="color:var(--blue)" id="d-bw-ul">3.2 Gbps</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-clock" style="font-size:11px"></i> Core Uptime</div><div class="mv" style="color:var(--green)">47d 3h</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-package" style="font-size:11px"></i> Low Stock Alert</div><div class="mv" style="color:var(--red)">3 items ⚠</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-clock" style="color:var(--teal)"></i> Attendance Today</div></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:.7rem">
+        <div class="ms"><div class="n" style="color:var(--green)">14</div><div class="l">Present</div></div>
+        <div class="ms"><div class="n" style="color:var(--red)">2</div><div class="l">Absent</div></div>
+        <div class="ms"><div class="n" style="color:var(--amber)">1</div><div class="l">Late</div></div>
+      </div>
+      <div class="ri"><div class="av" style="background:rgba(59,130,246,.2);color:var(--blue)">KA</div><div style="flex:1"><div style="font-size:10.5px;color:var(--text)">Karim Ahmed</div><div style="font-size:9px;color:var(--text3)">Network Eng · 8:52 AM</div></div><i class="ti ti-circle-check" style="color:var(--green);font-size:14px"></i></div>
+      <div class="ri"><div class="av" style="background:rgba(16,185,129,.2);color:var(--green)">MR</div><div style="flex:1"><div style="font-size:10.5px;color:var(--text)">Mahmud Rahman</div><div style="font-size:9px;color:var(--text3)">Support · 9:01 AM</div></div><i class="ti ti-circle-check" style="color:var(--green);font-size:14px"></i></div>
+      <div class="ri"><div class="av" style="background:rgba(245,158,11,.2);color:var(--amber)">SA</div><div style="flex:1"><div style="font-size:10.5px;color:var(--text)">Salma Akter</div><div style="font-size:9px;color:var(--text3)">Billing · 9:47 AM Late</div></div><i class="ti ti-clock" style="color:var(--amber);font-size:14px"></i></div>
+      <div class="ri"><div class="av" style="background:rgba(239,68,68,.2);color:var(--red)">NH</div><div style="flex:1"><div style="font-size:10.5px;color:var(--text)">Nabil Hasan</div><div style="font-size:9px;color:var(--text3)">NOC Engineer</div></div><i class="ti ti-circle-x" style="color:var(--red);font-size:14px"></i></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CLIENTS ===== -->
+<div class="page" id="page-clients">
+  <div class="sh"><h2>Client Management</h2><div style="display:flex;gap:6px"><button class="btn btn-g"><i class="ti ti-file-export"></i> Excel</button><button class="btn btn-g"><i class="ti ti-file-type-pdf"></i> PDF</button><button class="btn btn-p" onclick="showAddClient()"><i class="ti ti-plus"></i> Add Client</button></div></div>
+  <div class="ss"><div class="si2"><div class="sv2" style="color:var(--blue)" id="c-total">2,335</div><div class="sl3">Total</div></div><div class="si2"><div class="sv2" style="color:var(--green)" id="c-online">1,677</div><div class="sl3">Online</div></div><div class="si2"><div class="sv2" style="color:var(--purple)">1,295</div><div class="sl3">Paid</div></div><div class="si2"><div class="sv2" style="color:var(--amber)" id="c-unpaid">896</div><div class="sl3">Unpaid</div></div><div class="si2"><div class="sv2" style="color:var(--red)" id="c-blocked">159</div><div class="sl3">Blocked</div></div><div class="si2"><div class="sv2" style="color:var(--teal)">30</div><div class="sl3">New This Month</div></div></div>
+  <div class="card">
+    <div class="srch"><i class="ti ti-search"></i><input placeholder="Search name, phone, username, MAC..." oninput="filterClients(this.value)"/><select class="fs" style="border:none;background:none;font-size:10.5px;color:var(--text2);padding:0" onchange="filterClients('')"><option>All Status</option><option>Active</option><option>Blocked</option><option>Unpaid</option></select></div>
+    <table class="tbl" id="clientTable">
+      <thead><tr><th>#</th><th>Code</th><th>Username/IP</th><th>Name</th><th>Phone</th><th>Zone</th><th>Package</th><th>M.Bill</th><th>Expire</th><th>Online</th><th>Status</th><th>Bill</th><th>Action</th></tr></thead>
+      <tbody id="clientTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== BILLING ===== -->
+<div class="page" id="page-billing">
+  <div class="sh"><h2>Billing & Payments</h2><div style="display:flex;gap:6px"><button class="btn btn-g"><i class="ti ti-file-export"></i> Excel</button><button class="btn btn-p" onclick="showToast('success','Bills Generated','Monthly bills generated for 2,233 clients!')"><i class="ti ti-file-invoice"></i> Generate All Bills</button></div></div>
+  <div class="sg"><div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-users"></i></div></div><div class="sv">1,295</div><div class="sl2">Paid Clients</div></div><div class="sc ca"><div class="st"><div class="si" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="ti ti-cash-off"></i></div></div><div class="sv">896</div><div class="sl2">Unpaid Clients</div></div><div class="sc cb"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-receipt"></i></div></div><div class="sv">2,233</div><div class="sl2">Generated Bills</div></div><div class="sc cp"><div class="st"><div class="si" style="background:rgba(139,92,246,.15);color:var(--purple)"><i class="ti ti-coin"></i></div></div><div class="sv">৳4.2L</div><div class="sl2">Collected This Month</div></div></div>
+  <div class="card">
+    <div class="srch"><i class="ti ti-search"></i><input placeholder="Search client, invoice..."/></div>
+    <table class="tbl">
+      <thead><tr><th>#</th><th>Invoice</th><th>Client</th><th>Amount</th><th>Received</th><th>Due</th><th>Method</th><th>Due Date</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody id="billingTbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== AUTOMATION ENGINE ===== -->
+<div class="page" id="page-automation">
+  <div class="sh"><h2>Automation Engine</h2><button class="btn btn-p" onclick="runAllAutomation()"><i class="ti ti-player-play"></i> Run All Now</button></div>
+  <div class="sg">
+    <div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-robot"></i></div></div><div class="sv" id="aut-blocked">0</div><div class="sl2">Auto Blocked Today</div></div>
+    <div class="sc cb"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-message"></i></div></div><div class="sv" id="aut-sms">0</div><div class="sl2">SMS Sent Today</div></div>
+    <div class="sc ca"><div class="st"><div class="si" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="ti ti-refresh"></i></div></div><div class="sv" id="aut-unblocked">0</div><div class="sl2">Auto Unblocked Today</div></div>
+    <div class="sc cp"><div class="st"><div class="si" style="background:rgba(139,92,246,.15);color:var(--purple)"><i class="ti ti-receipt"></i></div></div><div class="sv" id="aut-bills">0</div><div class="sl2">Bills Auto Generated</div></div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-list-check" style="color:var(--blue)"></i> Automation Rules</div><div class="ca"><span class="pulse"></span> Active</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-calendar" style="font-size:11px;color:var(--blue)"></i> Bill due today → SMS reminder</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-ban" style="font-size:11px;color:var(--red)"></i> Due + 3 days → Auto block Mikrotik</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-player-play" style="font-size:11px;color:var(--green)"></i> Payment received → Auto unblock</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-router-off" style="font-size:11px;color:var(--red)"></i> OLT offline → Auto ticket + Admin SMS</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-signal" style="font-size:11px;color:var(--amber)"></i> ONU signal &lt;-24dBm → Warning SMS</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-wifi-off" style="font-size:11px;color:var(--text2)"></i> Mikrotik disconnect → Live offline update</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-package" style="font-size:11px;color:var(--amber)"></i> Stock low → Admin email + SMS alert</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-user-off" style="font-size:11px;color:var(--text2)"></i> Employee absent 2+ days → HR notify</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-file-invoice" style="font-size:11px;color:var(--purple)"></i> 1st of month → Generate all bills auto</div><div class="badge bg">ON</div></div>
+      <div class="mr"><div class="ml"><i class="ti ti-bell" style="font-size:11px;color:var(--cyan)"></i> Bill expire in 3 days → Advance reminder</div><div class="badge bg">ON</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-terminal" style="color:var(--green)"></i> Automation Log (Live)</div><div class="ca"><span class="pulse"></span> Running</div></div>
+      <div class="auto-log" id="autoLog">
+        <div class="entry"><div class="time">10:17:42</div><div class="ok">✓ Auto blocked 12 unpaid clients on Mikrotik</div></div>
+        <div class="entry"><div class="time">10:17:38</div><div class="info">📱 SMS sent to 231 clients (bill due reminder)</div></div>
+        <div class="entry"><div class="time">10:15:10</div><div class="warn">⚠ OLT-04 offline — auto ticket created #SYS-20260614</div></div>
+        <div class="entry"><div class="time">10:12:05</div><div class="ok">✓ Payment ৳600 received — Rahim Hossain auto unblocked</div></div>
+        <div class="entry"><div class="time">10:08:33</div><div class="info">🔄 Mikrotik sync: 1,677 online, 658 offline updated</div></div>
+        <div class="entry"><div class="time">10:01:17</div><div class="warn">⚠ Weak signal: ASN0322 Sajit (-29.6dBm) — SMS sent</div></div>
+        <div class="entry"><div class="time">09:55:02</div><div class="ok">✓ Monthly bills generated for 2,233 clients</div></div>
+        <div class="entry"><div class="time">09:30:00</div><div class="info">📱 Advance reminder SMS: 47 clients (expire in 3 days)</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-clock" style="color:var(--teal)"></i> Scheduled Tasks</div></div>
+    <table class="tbl">
+      <thead><tr><th>Task</th><th>Schedule</th><th>Last Run</th><th>Next Run</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td style="color:var(--text)">Sync Mikrotik Online Status</td><td style="color:var(--text2)">Every 5 min</td><td style="color:var(--text3)">10:17 PM</td><td style="color:var(--cyan)">10:22 PM</td><td><div class="badge bg">Running</div></td><td><button class="btn btn-s" style="padding:2px 7px;font-size:9.5px" onclick="showToast('success','Synced','Mikrotik sync complete!')"><i class="ti ti-player-play"></i> Run</button></td></tr>
+        <tr><td style="color:var(--text)">Sync OLT Status (SNMP)</td><td style="color:var(--text2)">Every 10 min</td><td style="color:var(--text3)">10:10 PM</td><td style="color:var(--cyan)">10:20 PM</td><td><div class="badge bg">Running</div></td><td><button class="btn btn-s" style="padding:2px 7px;font-size:9.5px" onclick="showToast('success','Synced','OLT sync complete!')"><i class="ti ti-player-play"></i> Run</button></td></tr>
+        <tr><td style="color:var(--text)">Auto Block Unpaid Clients</td><td style="color:var(--text2)">Daily 9:00 AM</td><td style="color:var(--text3)">Today 9:00 AM</td><td style="color:var(--cyan)">Tomorrow 9:00 AM</td><td><div class="badge bg">Scheduled</div></td><td><button class="btn btn-d" style="padding:2px 7px;font-size:9.5px" onclick="simulateAutoBlock()"><i class="ti ti-player-play"></i> Test</button></td></tr>
+        <tr><td style="color:var(--text)">Send Bill Reminders (SMS)</td><td style="color:var(--text2)">Daily 10:00 AM</td><td style="color:var(--text3)">Today 10:00 AM</td><td style="color:var(--cyan)">Tomorrow 10:00 AM</td><td><div class="badge bg">Scheduled</div></td><td><button class="btn btn-a" style="padding:2px 7px;font-size:9.5px" onclick="showToast('info','SMS Sent','231 bill reminder SMS sent!')"><i class="ti ti-player-play"></i> Test</button></td></tr>
+        <tr><td style="color:var(--text)">Generate Monthly Bills</td><td style="color:var(--text2)">1st of month 12:01 AM</td><td style="color:var(--text3)">1 Jun 2026</td><td style="color:var(--cyan)">1 Jul 2026</td><td><div class="badge bg">Scheduled</div></td><td><button class="btn btn-a" style="padding:2px 7px;font-size:9.5px" onclick="showToast('success','Bills Generated','2,233 bills auto-generated!')"><i class="ti ti-player-play"></i> Test</button></td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ===== PAYMENT GATEWAY ===== -->
+<div class="page" id="page-payment">
+  <div class="sh"><h2>Payment Gateway</h2></div>
+  <div class="pay-methods">
+    <div class="pay-card selected" id="pm-bkash" onclick="selectPayMethod('bkash')">
+      <i class="ti ti-credit-card" style="color:#e2136e"></i>
+      <div class="pm-name">bKash</div>
+      <div class="pm-sub">Tokenized API</div>
+    </div>
+    <div class="pay-card" id="pm-nagad" onclick="selectPayMethod('nagad')">
+      <i class="ti ti-credit-card" style="color:#f6871f"></i>
+      <div class="pm-name">Nagad</div>
+      <div class="pm-sub">Merchant API</div>
+    </div>
+    <div class="pay-card" id="pm-rocket" onclick="selectPayMethod('rocket')">
+      <i class="ti ti-credit-card" style="color:#8c2d91"></i>
+      <div class="pm-name">Rocket</div>
+      <div class="pm-sub">DBBL API</div>
+    </div>
+    <div class="pay-card" id="pm-ssl" onclick="selectPayMethod('ssl')">
+      <i class="ti ti-credit-card" style="color:var(--blue)"></i>
+      <div class="pm-name">SSL Commerz</div>
+      <div class="pm-sub">Card / Net Banking</div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-cash" style="color:var(--green)"></i> Collect Payment (Manual)</div></div>
+      <div style="margin-bottom:9px"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Select Client</div><select class="fs" style="width:100%" id="payClientSelect"><option>ASN0009 — JADULAL DAS (Due: ৳1200)</option><option>ASN0016 — MD NAHID HASAN (Due: ৳500)</option><option>ASN0619 — PIYASH ARCHJEE (Due: ৳600)</option></select></div>
+      <div style="margin-bottom:9px"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Amount (৳)</div><input class="fi" style="width:100%" type="number" id="payAmount" value="600" placeholder="Enter amount"/></div>
+      <div style="margin-bottom:9px"><div style="font-size:10px;color:var(--text2);margin-bottom:4px">Payment Method</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-p" onclick="collectPayment('cash')"><i class="ti ti-cash"></i> Cash</button>
+          <button class="btn btn-g" onclick="collectPayment('bkash')" style="color:#e2136e;border-color:#e2136e"><i class="ti ti-credit-card"></i> bKash</button>
+          <button class="btn btn-g" onclick="collectPayment('nagad')" style="color:#f6871f;border-color:#f6871f"><i class="ti ti-credit-card"></i> Nagad</button>
+          <button class="btn btn-g" onclick="collectPayment('rocket')" style="color:#8c2d91;border-color:#8c2d91"><i class="ti ti-credit-card"></i> Rocket</button>
+          <button class="btn btn-g" onclick="collectPayment('bank')"><i class="ti ti-building-bank"></i> Bank</button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ct"><i class="ti ti-history" style="color:var(--purple)"></i> Recent Payments</div></div>
+      <div id="paymentHistory">
+        <div class="le"><div class="lt2">10:12 PM</div><div class="badge bg" style="margin-right:5px">PAID</div><span style="color:var(--text)">Rahim Hossain — ৳600 (bKash) → Auto Unblocked ✓</span></div>
+        <div class="le"><div class="lt2">09:45 AM</div><div class="badge bg" style="margin-right:5px">PAID</div><span style="color:var(--text)">Sridam Das — ৳800 (Cash) → Active ✓</span></div>
+        <div class="le"><div class="lt2">09:20 AM</div><div class="badge bg" style="margin-right:5px">PAID</div><span style="color:var(--text)">MD Jahidul Islam — ৳600 (Nagad) → Active ✓</span></div>
+        <div class="le"><div class="lt2">Yesterday</div><div class="badge ba" style="margin-right:5px">PARTIAL</div><span style="color:var(--text)">Kamal Ahmed — ৳400 of ৳800 (Cash)</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ch"><div class="ct"><i class="ti ti-chart-bar" style="color:var(--blue)"></i> Payment Summary (June 2026)</div></div>
+    <div style="height:160px"><canvas id="payChart" role="img" aria-label="Payment chart"></canvas></div>
+  </div>
+</div>
+
+<!-- ===== OLT USERS ===== -->
+<div class="page" id="page-oltusers">
+  <div class="sh"><h2>OLT Users (ONU Live Status)</h2></div>
+  <div class="sg"><div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-wifi"></i></div></div><div class="sv">715</div><div class="sl2">Online</div></div><div class="sc cr"><div class="st"><div class="si" style="background:rgba(239,68,68,.15);color:var(--red)"><i class="ti ti-wifi-off"></i></div></div><div class="sv">90</div><div class="sl2">Offline</div></div><div class="sc ca"><div class="st"><div class="si" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="ti ti-signal"></i></div></div><div class="sv">152</div><div class="sl2">Weak Signal (dBm24+)</div></div><div class="sc cb"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-router"></i></div></div><div class="sv">7</div><div class="sl2">Total OLTs</div></div></div>
+  <div class="card">
+    <div class="srch"><i class="ti ti-search"></i><input placeholder="Search username, MAC, IP..."/></div>
+    <table class="tbl"><thead><tr><th>#</th><th>Username</th><th>Client Name</th><th>MAC</th><th>IP</th><th>OLT</th><th>Signal (dBm)</th><th>Port</th><th>Status</th><th>Deregister Reason</th><th>Last Synced</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>ASN2157</td><td style="color:var(--text)">MD JAHIDUL ISLAM</td><td style="font-size:8.5px;color:var(--cyan)">00:31:92:85:C6:3F</td><td style="color:var(--cyan)">157.119.184.24:166</td><td style="font-size:9px">ASN_ALG_NEW_OLT</td><td style="color:var(--green);font-weight:700">-19.2</td><td>GPON0/2:110</td><td><div class="badge bg"><span class="pulse"></span> online</div></td><td style="font-size:8.5px;color:var(--text3)">Dying Gasp</td><td style="font-size:8.5px;color:var(--text3)">4/27/2026</td></tr>
+      <tr><td>2</td><td>ASN0854</td><td style="color:var(--text)">TAWFIQ AHMED</td><td style="font-size:8.5px;color:var(--cyan)">00:31:92:BE:FB:2D</td><td style="color:var(--cyan)">157.119.184.24:163</td><td style="font-size:9px">GPON_OLT_2</td><td style="color:var(--amber);font-weight:700">-21.1</td><td>GPON0/3:17</td><td><div class="badge bg"><span class="pulse"></span> online</div></td><td style="font-size:8.5px;color:var(--text3)">OMCI Link Down</td><td style="font-size:8.5px;color:var(--text3)">4/26/2026</td></tr>
+      <tr><td>3</td><td>ASN0322</td><td style="color:var(--text)">SAJIT</td><td style="font-size:8.5px;color:var(--cyan)">00:72:63:51:23:46</td><td style="color:var(--cyan)">157.119.184.24:163</td><td style="font-size:9px">GPON_OLT_2</td><td style="color:var(--red);font-weight:700">-29.6</td><td>GPON0/1:5</td><td><div class="badge br">offline</div></td><td style="font-size:8.5px;color:var(--amber)">Wire Down</td><td style="font-size:8.5px;color:var(--text3)">6/10/2026</td></tr>
+    </tbody></table>
+  </div>
+</div>
+
+<!-- ===== NETWORK DIAGRAM ===== -->
+<div class="page" id="page-network">
+  <div class="sh"><h2>Network Diagram</h2><button class="btn btn-g"><i class="ti ti-download"></i> Export</button></div>
+  <div class="card">
+    <svg class="nc" id="netSvg" role="img" aria-label="Network topology diagram">
+      <line x1="9%" y1="150" x2="27%" y2="150" stroke="#203656" stroke-width="2"/>
+      <line x1="30%" y1="150" x2="50%" y2="90" stroke="#10b981" stroke-width="2.5"/>
+      <line x1="30%" y1="150" x2="50%" y2="220" stroke="#14b8a6" stroke-width="2.5"/>
+      <line x1="53%" y1="90" x2="70%" y2="40" stroke="#203656" stroke-width="1.5"/>
+      <line x1="53%" y1="90" x2="70%" y2="90" stroke="#203656" stroke-width="1.5"/>
+      <line x1="53%" y1="90" x2="70%" y2="145" stroke="#203656" stroke-width="1.5"/>
+      <line x1="53%" y1="220" x2="70%" y2="185" stroke="#203656" stroke-width="1.5"/>
+      <line x1="53%" y1="220" x2="70%" y2="225" stroke="#203656" stroke-width="1.5"/>
+      <line x1="53%" y1="220" x2="70%" y2="265" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="5,3"/>
+      <line x1="73%" y1="40" x2="88%" y2="25" stroke="#526080" stroke-width="1"/>
+      <line x1="73%" y1="40" x2="88%" y2="55" stroke="#526080" stroke-width="1"/>
+      <line x1="73%" y1="90" x2="88%" y2="80" stroke="#526080" stroke-width="1"/>
+      <line x1="73%" y1="90" x2="88%" y2="100" stroke="#526080" stroke-width="1"/>
+      <rect x="6%" y="130" width="56" height="40" rx="8" fill="#162038" stroke="#3b82f6" stroke-width="1.5"/>
+      <text x="9%" y="150" fill="#06b6d4" font-size="8.5" text-anchor="middle" font-family="sans-serif">Switch</text>
+      <text x="9%" y="161" fill="#445c80" font-size="7" text-anchor="middle" font-family="sans-serif">172.22.200.8</text>
+      <circle cx="29%" cy="150" r="26" fill="#0c1a3a" stroke="#3b82f6" stroke-width="2"/>
+      <text x="29%" y="148" fill="#3b82f6" font-size="8.5" text-anchor="middle" font-family="sans-serif" font-weight="700">Core</text>
+      <text x="29%" y="159" fill="#3b82f6" font-size="7.5" text-anchor="middle" font-family="sans-serif">Router</text>
+      <rect x="51%" y="70" width="52" height="40" rx="7" fill="#042314" stroke="#10b981" stroke-width="1.5"/>
+      <text x="53.5%" y="87" fill="#10b981" font-size="8" text-anchor="middle" font-family="sans-serif">Access</text>
+      <text x="53.5%" y="98" fill="#10b981" font-size="7.5" text-anchor="middle" font-family="sans-serif">Server</text>
+      <rect x="51%" y="202" width="52" height="38" rx="7" fill="#042520" stroke="#14b8a6" stroke-width="1.5"/>
+      <text x="53.5%" y="218" fill="#14b8a6" font-size="8" text-anchor="middle" font-family="sans-serif">Epon</text>
+      <text x="53.5%" y="229" fill="#14b8a6" font-size="7.5" text-anchor="middle" font-family="sans-serif">Router</text>
+      <circle cx="72%" cy="40" r="18" fill="#1a0f35" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="72%" y="38" fill="#8b5cf6" font-size="7" text-anchor="middle" font-family="sans-serif">GPON</text>
+      <text x="72%" y="47" fill="#8b5cf6" font-size="6.5" text-anchor="middle" font-family="sans-serif">OLT-01</text>
+      <circle cx="72%" cy="90" r="18" fill="#1a0f35" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="72%" y="88" fill="#8b5cf6" font-size="7" text-anchor="middle" font-family="sans-serif">GPON</text>
+      <text x="72%" y="97" fill="#8b5cf6" font-size="6.5" text-anchor="middle" font-family="sans-serif">OLT-02</text>
+      <circle cx="72%" cy="145" r="18" fill="#1a0f35" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="72%" y="143" fill="#8b5cf6" font-size="7" text-anchor="middle" font-family="sans-serif">GPON</text>
+      <text x="72%" y="152" fill="#8b5cf6" font-size="6.5" text-anchor="middle" font-family="sans-serif">OLT-03</text>
+      <circle cx="72%" cy="185" r="18" fill="#1a0f35" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="72%" y="183" fill="#8b5cf6" font-size="7" text-anchor="middle" font-family="sans-serif">GPON</text>
+      <text x="72%" y="192" fill="#8b5cf6" font-size="6.5" text-anchor="middle" font-family="sans-serif">OLT-04</text>
+      <circle cx="72%" cy="225" r="18" fill="#1a0f35" stroke="#8b5cf6" stroke-width="1.5"/>
+      <text x="72%" y="223" fill="#8b5cf6" font-size="7" text-anchor="middle" font-family="sans-serif">GPON</text>
+      <text x="72%" y="232" fill="#8b5cf6" font-size="6.5" text-anchor="middle" font-family="sans-serif">OLT-05</text>
+      <circle cx="72%" cy="265" r="18" fill="#2a0808" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="72%" y="263" fill="#ef4444" font-size="7" text-anchor="middle" font-family="sans-serif">GPON</text>
+      <text x="72%" y="272" fill="#ef4444" font-size="6.5" text-anchor="middle" font-family="sans-serif">OLT-06 ✕</text>
+      <circle cx="89%" cy="25" r="13" fill="#042314" stroke="#10b981" stroke-width="1"/>
+      <text x="89%" y="23" fill="#10b981" font-size="6.5" text-anchor="middle" font-family="sans-serif">16 Port</text>
+      <text x="89%" y="31" fill="#445c80" font-size="6" text-anchor="middle" font-family="sans-serif">Clients</text>
+      <circle cx="89%" cy="55" r="13" fill="#042314" stroke="#10b981" stroke-width="1"/>
+      <text x="89%" y="53" fill="#10b981" font-size="6.5" text-anchor="middle" font-family="sans-serif">8 Port</text>
+      <text x="89%" y="61" fill="#445c80" font-size="6" text-anchor="middle" font-family="sans-serif">Clients</text>
+      <circle cx="89%" cy="80" r="13" fill="#042314" stroke="#10b981" stroke-width="1"/>
+      <text x="89%" y="78" fill="#10b981" font-size="6.5" text-anchor="middle" font-family="sans-serif">8 Port</text>
+      <text x="89%" y="86" fill="#445c80" font-size="6" text-anchor="middle" font-family="sans-serif">Clients</text>
+      <circle cx="89%" cy="100" r="13" fill="#042314" stroke="#10b981" stroke-width="1"/>
+      <text x="89%" y="98" fill="#10b981" font-size="6.5" text-anchor="middle" font-family="sans-serif">8 Port</text>
+      <text x="89%" y="106" fill="#445c80" font-size="6" text-anchor="middle" font-family="sans-serif">Clients</text>
+    </svg>
+    <div style="margin-top:.5rem;display:flex;gap:1rem;font-size:9.5px;color:var(--text3);flex-wrap:wrap">
+      <span><span style="color:var(--blue)">●</span> Core/Router</span>
+      <span><span style="color:var(--green)">●</span> Access Server</span>
+      <span><span style="color:var(--teal)">●</span> Epon Router</span>
+      <span><span style="color:var(--purple)">●</span> OLT Online</span>
+      <span><span style="color:var(--red)">●</span> OLT Offline</span>
+      <span><span style="color:var(--green)">●</span> Client Ports</span>
+    </div>
+  </div>
+</div>
+
+<!-- OTHER PAGES (attendance, hrm, inventory, reports etc) -->
+<div class="page" id="page-mikrotik">
+  <div class="sh"><h2>Mikrotik Server</h2><button class="btn btn-p"><i class="ti ti-plus"></i> Add Server</button></div>
+  <div class="card"><table class="tbl"><thead><tr><th>Serial</th><th>Server Name</th><th>Server IP</th><th>Username</th><th>Port</th><th>Version</th><th>Status</th><th>Last Synced</th><th>Action</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td><div style="color:var(--text)">EPON_ROUTER</div><div class="badge br" style="margin-top:2px">InActive</div></td><td style="color:var(--cyan)">157.119.184.25</td><td>ispdigital</td><td>7788</td><td>v2</td><td><div class="tg off"></div></td><td style="color:var(--text3)">—</td><td><div style="display:flex;gap:4px"><button class="btn btn-s" style="padding:2px 6px;font-size:9.5px" onclick="showToast('info','Testing','Testing connection...')"><i class="ti ti-plug"></i></button><button class="btn btn-g" style="padding:2px 6px;font-size:9.5px"><i class="ti ti-edit"></i></button></div></td></tr>
+    <tr><td>2</td><td><div style="color:var(--text)">EPON_ROUTER_1036</div><div class="badge bg" style="margin-top:2px">Connected</div></td><td style="color:var(--cyan)">103.143.34.122</td><td>ispdigital</td><td>7788</td><td>v2</td><td><div class="tg on"></div></td><td style="color:var(--green)">10:17 PM</td><td><div style="display:flex;gap:4px"><button class="btn btn-s" style="padding:2px 6px;font-size:9.5px" onclick="showToast('success','Synced','1,677 clients synced!')"><i class="ti ti-refresh"></i></button><button class="btn btn-g" style="padding:2px 6px;font-size:9.5px"><i class="ti ti-edit"></i></button></div></td></tr>
+    <tr><td>3</td><td><div style="color:var(--text)">Access-Server</div><div class="badge bg" style="margin-top:2px">Connected</div></td><td style="color:var(--cyan)">103.143.34.242</td><td>billing</td><td>2211</td><td>v2</td><td><div class="tg on"></div></td><td style="color:var(--green)">10:17 PM</td><td><div style="display:flex;gap:4px"><button class="btn btn-s" style="padding:2px 6px;font-size:9.5px" onclick="showToast('success','Synced','Sync complete!')"><i class="ti ti-refresh"></i></button><button class="btn btn-g" style="padding:2px 6px;font-size:9.5px"><i class="ti ti-edit"></i></button></div></td></tr>
+  </tbody></table></div>
+</div>
+<div class="page" id="page-olt"><div class="sh"><h2>OLT Management</h2><div style="display:flex;gap:6px"><button class="btn btn-g" onclick="showToast('info','Syncing','Syncing all OLTs...')"><i class="ti ti-refresh"></i> Sync All</button><button class="btn btn-p"><i class="ti ti-plus"></i> Add OLT</button></div></div><div class="card"><table class="tbl"><thead><tr><th>Serial</th><th>IP Address</th><th>Community</th><th>OLT Type</th><th>Status</th><th>Online ONUs</th><th>Offline ONUs</th><th>Action</th></tr></thead><tbody><tr><td>1</td><td style="color:var(--cyan)">157.119.184.26:168</td><td>softifybd</td><td><div class="badge bb">BDCOM_GPON</div></td><td><div class="badge bg">Active</div></td><td style="color:var(--green)">128</td><td style="color:var(--red)">0</td><td><button class="btn btn-s" style="padding:2px 6px;font-size:9.5px" onclick="showToast('success','Synced','OLT-1 synced!')"><i class="ti ti-refresh"></i> Sync</button></td></tr><tr><td>4</td><td style="color:var(--cyan)">157.119.184.24:162</td><td>softifybd</td><td><div class="badge bb">BDCOM_GPON</div></td><td><div class="badge br">Offline</div></td><td style="color:var(--green)">0</td><td style="color:var(--red)">64</td><td><button class="btn btn-d" style="padding:2px 6px;font-size:9.5px" onclick="showToast('error','Offline','OLT-4 unreachable! Auto ticket created.')"><i class="ti ti-alert-triangle"></i> Alert</button></td></tr></tbody></table></div></div>
+<div class="page" id="page-tickets"><div class="sh"><h2>Support Tickets</h2><button class="btn btn-p"><i class="ti ti-plus"></i> New Ticket</button></div><div class="sg"><div class="sc cb"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-ticket"></i></div></div><div class="sv">3</div><div class="sl2">Total</div></div><div class="sc ca"><div class="st"><div class="si" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="ti ti-clock"></i></div></div><div class="sv">0</div><div class="sl2">Pending</div></div><div class="sc cp"><div class="st"><div class="si" style="background:rgba(139,92,246,.15);color:var(--purple)"><i class="ti ti-refresh"></i></div></div><div class="sv">3</div><div class="sl2">Processing</div></div><div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-check"></i></div></div><div class="sv">0</div><div class="sl2">Solved</div></div></div><div class="card"><table class="tbl"><thead><tr><th>Ticket No</th><th>Client</th><th>Problem</th><th>Zone</th><th>Priority</th><th>Time</th><th>Status</th><th>Assigned To</th><th>Action</th></tr></thead><tbody><tr><td style="color:var(--cyan)">#TK-0030</td><td style="color:var(--text)">MD RAZAUL KORIM</td><td>Connectivity Down/Net slow</td><td>4 · Proshanti</td><td><div class="badge br">High</div></td><td style="color:var(--text3)">11 Jul 2024</td><td><div class="badge ba">Processing</div></td><td style="color:var(--blue)">MD Tanvir Hossain</td><td><button class="btn btn-s" style="padding:2px 6px;font-size:9.5px" onclick="showToast('success','Solved','Ticket marked as solved! SMS sent to client.')"><i class="ti ti-check"></i> Solve</button></td></tr><tr><td style="color:var(--cyan)">#SYS-20260614</td><td style="color:var(--amber)">SYSTEM (Auto)</td><td>OLT-04 Oxygen offline</td><td>Oxygen</td><td><div class="badge br">Critical</div></td><td style="color:var(--text3)">Today 10:15 PM</td><td><div class="badge br">Open</div></td><td style="color:var(--blue)">Auto Created</td><td><button class="btn btn-g" style="padding:2px 6px;font-size:9.5px"><i class="ti ti-eye"></i></button></td></tr></tbody></table></div></div>
+<div class="page" id="page-attendance"><div class="sh"><h2>Employee Attendance</h2><button class="btn btn-p"><i class="ti ti-plus"></i> Check In</button></div><div class="sg"><div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-user-check"></i></div></div><div class="sv">14</div><div class="sl2">Present</div></div><div class="sc cr"><div class="st"><div class="si" style="background:rgba(239,68,68,.15);color:var(--red)"><i class="ti ti-user-off"></i></div></div><div class="sv">2</div><div class="sl2">Absent</div></div><div class="sc ca"><div class="st"><div class="si" style="background:rgba(245,158,11,.15);color:var(--amber)"><i class="ti ti-clock-x"></i></div></div><div class="sv">1</div><div class="sl2">Late</div></div><div class="sc cb"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-map-pin"></i></div></div><div class="sv">GPS</div><div class="sl2">Verified</div></div></div><div class="card"><table class="tbl"><thead><tr><th>Employee</th><th>ID</th><th>Dept</th><th>Check In</th><th>Status</th><th>GPS</th></tr></thead><tbody><tr><td><div style="display:flex;align-items:center;gap:6px"><div class="av" style="background:rgba(59,130,246,.2);color:var(--blue)">KA</div><span style="color:var(--text)">Karim Ahmed</span></div></td><td>E0041</td><td>Network</td><td style="color:var(--green)">8:52 AM</td><td><div class="badge bg">Present</div></td><td><div class="badge bb">Verified</div></td></tr><tr><td><div style="display:flex;align-items:center;gap:6px"><div class="av" style="background:rgba(245,158,11,.2);color:var(--amber)">SA</div><span style="color:var(--text)">Salma Akter</span></div></td><td>E0039</td><td>Finance</td><td style="color:var(--amber)">9:47 AM</td><td><div class="badge ba">Late</div></td><td><div class="badge bb">Verified</div></td></tr><tr><td><div style="display:flex;align-items:center;gap:6px"><div class="av" style="background:rgba(239,68,68,.2);color:var(--red)">NH</div><span style="color:var(--text)">Nabil Hasan</span></div></td><td>E0035</td><td>NOC</td><td style="color:var(--text3)">—</td><td><div class="badge br">Absent</div></td><td><div class="badge bgr">None</div></td></tr></tbody></table></div></div>
+<div class="page" id="page-hrm"><div class="sh"><h2>HRM & Payroll</h2><button class="btn btn-p"><i class="ti ti-plus"></i> Add Employee</button></div><div class="card"><table class="tbl"><thead><tr><th>Name</th><th>ID</th><th>Phone</th><th>Department</th><th>Position</th><th>Salary</th><th>Status</th><th>Action</th></tr></thead><tbody><tr><td style="color:var(--text)">ABU HAYAT MAHMOOD IRFAN</td><td style="color:var(--text3)">E0055</td><td>01575667684</td><td>Technical Engineer</td><td>Call Center Executive</td><td style="color:var(--green);font-weight:700">৳18,000</td><td><div class="badge bg">Active</div></td><td><button class="btn btn-g" style="padding:2px 6px;font-size:9.5px"><i class="ti ti-edit"></i></button></td></tr><tr><td style="color:var(--text)">SHARIF</td><td style="color:var(--text3)">E0052</td><td>01349353043</td><td>Fiber Technician</td><td>Service Man</td><td style="color:var(--green);font-weight:700">৳10,000</td><td><div class="badge bg">Active</div></td><td><button class="btn btn-g" style="padding:2px 6px;font-size:9.5px"><i class="ti ti-edit"></i></button></td></tr></tbody></table></div></div>
+<div class="page" id="page-inventory"><div class="sh"><h2>Inventory + Barcode</h2><button class="btn btn-p"><i class="ti ti-plus"></i> Add Stock</button></div><div style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:7px;padding:.5rem .75rem;margin-bottom:.875rem;font-size:10.5px;display:flex;align-items:center;gap:7px"><i class="ti ti-alert-triangle" style="color:var(--red)"></i><span style="color:var(--red);font-weight:700">3 items</span><span style="color:var(--text2)">below minimum stock — reorder needed!</span></div><div class="g2"><div class="card"><div class="ch"><div class="ct"><i class="ti ti-package" style="color:var(--blue)"></i> Stock Overview</div></div><div class="mr"><div class="ml"><i class="ti ti-router" style="color:var(--red)"></i> ONU / ONT</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:13px;font-weight:700;color:var(--red)">5</span><div class="badge br">LOW</div></div></div><div class="mr"><div class="ml"><i class="ti ti-line-dashed" style="color:var(--teal)"></i> Fiber Cable</div><div style="font-size:13px;font-weight:700;color:var(--green)">2,400m</div></div><div class="mr"><div class="ml"><i class="ti ti-circuit-cell" style="color:var(--purple)"></i> Splitter</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:13px;font-weight:700;color:var(--amber)">7</span><div class="badge ba">LOW</div></div></div><div class="mr"><div class="ml"><i class="ti ti-box" style="color:var(--amber)"></i> TJ Box</div><div style="font-size:13px;font-weight:700;color:var(--green)">34</div></div><div class="mr"><div class="ml"><i class="ti ti-device-floppy" style="color:var(--cyan)"></i> SFP Module</div><div style="display:flex;align-items:center;gap:7px"><span style="font-size:13px;font-weight:700;color:var(--red)">3</span><div class="badge br">LOW</div></div></div></div><div class="card"><div class="ch"><div class="ct"><i class="ti ti-barcode" style="color:var(--amber)"></i> Barcode Generator</div></div><div style="margin-bottom:7px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">Select Item</div><select class="fs" style="width:100%" id="barcodeItem" onchange="genBC()"><option value="ONU-HUAWEI-HG8310M">GPON ONU – Huawei HG8310M</option><option value="FIBER-CABLE-SM">Fiber Cable – Single Mode</option><option value="SPLITTER-1X8">Splitter PLC 1:8</option><option value="TJ-BOX-IP65">TJ Box IP65</option></select></div><div style="margin-bottom:7px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">Serial Number</div><input class="fi" style="width:100%" id="bcSerial" value="SN-2026-001234" oninput="genBC()"/></div><div style="text-align:center;background:var(--bg3);border-radius:8px;padding:.75rem;margin-bottom:7px"><div style="background:#fff;border-radius:5px;padding:.4rem;display:inline-block;margin-bottom:.4rem"><svg id="bcsvg"></svg></div><div style="font-size:9.5px;color:var(--text3)" id="bcLabel">GPON ONU – Huawei HG8310M</div></div><div style="display:flex;gap:6px"><button class="btn btn-p" style="flex:1;font-size:10.5px" onclick="printBC()"><i class="ti ti-printer"></i> Print Label</button><button class="btn btn-g" style="font-size:10.5px"><i class="ti ti-download"></i> PNG</button></div></div></div></div>
+<div class="page" id="page-sms"><div class="sh"><h2>SMS & Alerts</h2></div><div class="g2"><div class="card"><div class="ch"><div class="ct"><i class="ti ti-send" style="color:var(--blue)"></i> Send Bulk SMS</div></div><div style="margin-bottom:7px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">Recipients</div><select class="fs" style="width:100%"><option>All Clients (2,335)</option><option>Unpaid Clients (896)</option><option>Bill Expire Today (231)</option></select></div><div style="margin-bottom:7px"><div style="font-size:10px;color:var(--text2);margin-bottom:3px">Message</div><textarea class="fi" rows="3" style="width:100%;resize:none">প্রিয় গ্রাহক, আপনার ইন্টারনেট বিল পরিশোধের তারিখ পার হয়েছে। দ্রুত পরিশোধ করুন। ধন্যবাদ।</textarea></div><button class="btn btn-p" onclick="showToast('success','SMS Sent','896 SMS sent to unpaid clients!')"><i class="ti ti-send"></i> Send Now</button></div><div class="card"><div class="ch"><div class="ct"><i class="ti ti-robot" style="color:var(--purple)"></i> Automation Rules</div></div><div class="mr"><div class="ml">Auto SMS on bill due</div><div class="badge bg">ON</div></div><div class="mr"><div class="ml">Auto block after 3 days</div><div class="badge bg">ON</div></div><div class="mr"><div class="ml">Auto unblock on payment</div><div class="badge bg">ON</div></div><div class="mr"><div class="ml">OLT down → auto ticket</div><div class="badge bg">ON</div></div><div class="mr"><div class="ml">Low stock alert</div><div class="badge bg">ON</div></div><div class="mr"><div class="ml">Monthly auto billing</div><div class="badge bg">ON</div></div></div></div></div>
+<div class="page" id="page-pop"><div class="sh"><h2>POP Management</h2><button class="btn btn-p"><i class="ti ti-plus"></i> Add POP</button></div><div class="sg"><div class="sc cb"><div class="st"><div class="si" style="background:rgba(59,130,246,.15);color:var(--blue)"><i class="ti ti-topology-ring"></i></div></div><div class="sv">2</div><div class="sl2">Total POPs</div></div><div class="sc cg"><div class="st"><div class="si" style="background:rgba(16,185,129,.15);color:var(--green)"><i class="ti ti-users"></i></div></div><div class="sv">236</div><div class="sl2">Total Clients</div></div><div class="sc ct"><div class="st"><div class="si" style="background:rgba(20,184,166,.15);color:var(--teal)"><i class="ti ti-wifi"></i></div></div><div class="sv">177</div><div class="sl2">Online</div></div><div class="sc cr"><div class="st"><div class="si" style="background:rgba(239,68,68,.15);color:var(--red)"><i class="ti ti-user-off"></i></div></div><div class="sv">37</div><div class="sl2">Disabled</div></div></div><div class="g2"><div class="card"><div class="ch"><div class="ct" style="color:var(--blue)">TusharTechView (0003)</div><div class="badge bb">Postpaid</div></div><div class="mr"><div class="ml">Contact</div><div class="mv" style="color:var(--text2)">TUSHAR · 01861199725</div></div><div class="mr"><div class="ml">Server</div><div class="mv" style="color:var(--text2)">Access-Server</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px"><div class="ms"><div class="n" style="color:var(--blue)">36</div><div class="l">Running</div></div><div class="ms"><div class="n" style="color:var(--green)">25</div><div class="l">Enabled</div></div><div class="ms"><div class="n" style="color:var(--red)">11</div><div class="l">Disabled</div></div></div></div><div class="card"><div class="ch"><div class="ct" style="color:var(--blue)">SKYTECH (0001)</div><div class="badge bb">Postpaid</div></div><div class="mr"><div class="ml">Contact</div><div class="mv" style="color:var(--text2)">jamal · 01313922323</div></div><div class="mr"><div class="ml">Server</div><div class="mv" style="color:var(--text2)">Access-Server</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:9px"><div class="ms"><div class="n" style="color:var(--blue)">200</div><div class="l">Running</div></div><div class="ms"><div class="n" style="color:var(--green)">174</div><div class="l">Enabled</div></div><div class="ms"><div class="n" style="color:var(--red)">26</div><div class="l">Disabled</div></div></div></div></div></div>
+<div class="page" id="page-tasks"><div class="sh"><h2>Task Management</h2><button class="btn btn-p"><i class="ti ti-plus"></i> New Task</button></div><div class="g3"><div class="card"><div class="ch"><div class="ct" style="color:var(--amber)"><i class="ti ti-circle-dot"></i> Pending (0)</div></div><div style="text-align:center;padding:1.5rem;color:var(--text3);font-size:11px">No pending tasks</div></div><div class="card"><div class="ch"><div class="ct" style="color:var(--blue)"><i class="ti ti-player-play"></i> In Progress (3)</div></div><div class="ti"><div class="tic" style="background:rgba(239,68,68,.1)"><i class="ti ti-router-off" style="color:var(--red)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Fix OLT-04 Oxygen</div><div style="font-size:9.5px;color:var(--text3)">Karim Ahmed · Critical</div></div></div><div class="ti"><div class="tic" style="background:rgba(245,158,11,.1)"><i class="ti ti-bolt" style="color:var(--amber)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Replace ONU – Nasirabad</div><div style="font-size:9.5px;color:var(--text3)">Rahim Hossain · Medium</div></div></div></div><div class="card"><div class="ch"><div class="ct" style="color:var(--green)"><i class="ti ti-circle-check"></i> Done Today (5)</div></div><div class="ti"><div class="tic" style="background:rgba(16,185,129,.1)"><i class="ti ti-check" style="color:var(--green)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Cable repair – Agrabad</div><div style="font-size:9.5px;color:var(--text3)">Completed 3hr ago</div></div></div><div class="ti"><div class="tic" style="background:rgba(16,185,129,.1)"><i class="ti ti-check" style="color:var(--green)"></i></div><div style="flex:1"><div style="font-size:11px;color:var(--text)">Auto billing June 2026</div><div style="font-size:9.5px;color:var(--text3)">2,233 bills generated</div></div></div></div></div></div>
+<div class="page" id="page-accounting"><div class="sh"><h2>Accounting</h2></div><div class="g2"><div class="card"><div class="ch"><div class="ct"><i class="ti ti-trending-up" style="color:var(--green)"></i> Income vs Expense</div></div><div style="height:200px"><canvas id="accChart" role="img" aria-label="Accounting chart"></canvas></div></div><div class="card"><div class="ch"><div class="ct"><i class="ti ti-book" style="color:var(--teal)"></i> Chart of Accounts</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1001</div><div style="font-size:10.5px;color:var(--text)">Cash in Hand</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1002</div><div style="font-size:10.5px;color:var(--text)">bKash</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1003</div><div style="font-size:10.5px;color:var(--text)">Nagad</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1008</div><div style="font-size:10.5px;color:var(--text)">Rocket</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1009</div><div style="font-size:10.5px;color:var(--text)">SSL Commerz</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1202</div><div style="font-size:10.5px;color:var(--text)">Monthly Bill Receivable</div></div><div class="mr"><div class="ml" style="font-size:9px;color:var(--text3)">1203</div><div style="font-size:10.5px;color:var(--text)">Installation Charge</div></div></div></div></div>
+<div class="page" id="page-reports"><div class="sh"><h2>Reports & Analytics</h2><button class="btn btn-g"><i class="ti ti-download"></i> Export All</button></div><div class="g2"><div class="card"><div class="ch"><div class="ct"><i class="ti ti-chart-bar" style="color:var(--blue)"></i> Revenue vs Expense (2026)</div></div><div style="height:200px"><canvas id="revChart" role="img" aria-label="Revenue chart"></canvas></div></div><div class="card"><div class="ch"><div class="ct"><i class="ti ti-trending-up" style="color:var(--green)"></i> Client Growth</div></div><div style="height:200px"><canvas id="trendChart" role="img" aria-label="Client growth chart"></canvas></div></div></div></div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- ADD CLIENT MODAL -->
+<div class="modal-overlay" id="addClientModal" style="display:none">
+  <div class="modal">
+    <h3><i class="ti ti-user-plus" style="color:var(--blue)"></i> Add New Client</h3>
+    <div class="fg">
+      <div class="fgr"><label class="fl">Full Name *</label><input class="fi" id="nc-name" placeholder="MD. Karim Ahmed"/></div>
+      <div class="fgr"><label class="fl">Phone *</label><input class="fi" id="nc-phone" placeholder="01711234567"/></div>
+      <div class="fgr"><label class="fl">Username (PPPoE) *</label><input class="fi" id="nc-user" placeholder="ASN2336"/></div>
+      <div class="fgr"><label class="fl">Password *</label><input class="fi" id="nc-pass" type="password" placeholder="••••••"/></div>
+      <div class="fgr"><label class="fl">Monthly Bill (৳) *</label><input class="fi" id="nc-bill" type="number" placeholder="600"/></div>
+      <div class="fgr"><label class="fl">Zone</label><select class="fs"><option>Agrabad</option><option>Halishahar</option><option>Nasirabad</option><option>Oxygen</option></select></div>
+      <div class="fgr"><label class="fl">Package</label><select class="fs"><option>20Mbps – 20M_Package</option><option>30Mbps – 30M_Package</option><option>50Mbps – 50M_Package</option></select></div>
+      <div class="fgr"><label class="fl">Connection Type</label><select class="fs"><option>Fiber Optic</option><option>PPPoE</option><option>Static IP</option></select></div>
+    </div>
+    <div style="background:var(--bg3);border-radius:7px;padding:.65rem;font-size:10px;color:var(--text3);margin-bottom:.875rem"><i class="ti ti-info-circle" style="color:var(--blue)"></i> Client will be automatically added to Mikrotik server upon save.</div>
+    <div class="mf">
+      <button class="btn btn-g" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="saveClient()"><i class="ti ti-check"></i> Add Client + Sync Mikrotik</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// DEMO DATA
+// ============================================================
+const clients = [
+  {id:1,code:'170150',username:'ASN170150',ip:'192.168.170.150',name:'KHAJA FOOD PRODUCT',phone:'01833365554',zone:'Zone 4',pkg:'20Mbps/20M',bill:600,expire:'2026-07-20',online:true,status:'active',billing:'paid'},
+  {id:2,code:'0619',username:'ASN0619',ip:'',name:'PIYASH ARCHJEE',phone:'01603680225',zone:'Zone 9',pkg:'20Mbps/30M',bill:600,expire:'2026-07-15',online:true,status:'active',billing:'paid'},
+  {id:3,code:'0016',username:'ASN0016',ip:'',name:'MD NAHID HASAN',phone:'01633989736',zone:'Zone 5',pkg:'15Mbps/25M',bill:500,expire:'2026-06-10',online:false,status:'active',billing:'unpaid'},
+  {id:4,code:'0692',username:'ASN0692',ip:'',name:'MRS RINA BEGUM',phone:'01776147456',zone:'Zone 1',pkg:'15Mbps/25M',bill:500,expire:'2026-07-10',online:true,status:'active',billing:'paid'},
+  {id:5,code:'0578',username:'ASN0578',ip:'',name:'MD RUBEL',phone:'01998191852',zone:'Zone 4',pkg:'20Mbps/30M',bill:600,expire:'2026-07-05',online:false,status:'blocked',billing:'unpaid'},
+  {id:6,code:'2736',username:'ASN2736',ip:'',name:'ROBIUL HOSSEN',phone:'01819982095',zone:'Zone 2',pkg:'15Mbps/30M',bill:500,expire:'2026-06-01',online:false,status:'blocked',billing:'unpaid'},
+];
+const billings = [
+  {id:1,invoice:'INV-2026-0841',client:'KHAJA FOOD PRODUCT',amount:600,received:600,due:0,method:'bKash',dueDate:'2026-06-20',status:'paid'},
+  {id:2,invoice:'INV-2026-0842',client:'PIYASH ARCHJEE',amount:600,received:600,due:0,method:'Cash',dueDate:'2026-06-15',status:'paid'},
+  {id:3,invoice:'INV-2026-0843',client:'MD NAHID HASAN',amount:500,received:0,due:500,method:'',dueDate:'2026-06-10',status:'unpaid'},
+  {id:4,invoice:'INV-2026-0844',client:'MD RUBEL',amount:600,received:0,due:600,method:'',dueDate:'2026-06-05',status:'overdue'},
+  {id:5,invoice:'INV-2026-0845',client:'ROBIUL HOSSEN',amount:500,received:200,due:300,method:'Nagad',dueDate:'2026-06-01',status:'partial'},
+];
+let autoCounts = {blocked:12,sms:231,unblocked:3,bills:2233};
+
+// ============================================================
+// LOGIN / LOGOUT
+// ============================================================
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pass = document.getElementById('loginPass').value;
+  if (!email || !pass) { showToast('error','Error','Please enter email and password'); return; }
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('app').classList.add('show');
+  setTimeout(() => {
+    initCharts();
+    renderClients();
+    renderBillings();
+    startLiveUpdates();
+    showToast('success','Welcome!','Logged in as Admin — Alpha Satellite Network');
+  }, 300);
+}
+function doLogout() {
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginPage').style.display = 'flex';
+  showToast('info','Logged Out','See you again!');
+}
+
+// ============================================================
+// NAVIGATION
+// ============================================================
+const titles = {dashboard:'Dashboard',clients:'Client Management',billing:'Billing & Payments',mikrotik:'Mikrotik Server',olt:'OLT Management',oltusers:'OLT Users (ONU Live Status)',network:'Network Diagram',automation:'Automation Engine',payment:'Payment Gateway',tickets:'Support Tickets',attendance:'Employee Attendance',hrm:'HRM & Payroll',inventory:'Inventory + Barcode',sms:'SMS & Alerts',pop:'POP Management',tasks:'Task Management',accounting:'Accounting',reports:'Reports & Analytics'};
+function go(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  const p = document.getElementById('page-' + id);
+  if (p) p.classList.add('active');
+  if (el) el.classList.add('active');
+  document.getElementById('tb-title').textContent = titles[id] || id;
+  setTimeout(initCharts, 100);
+}
+
+// ============================================================
+// CLIENT TABLE
+// ============================================================
+function renderClients(list = clients) {
+  const tbody = document.getElementById('clientTbody');
+  if (!tbody) return;
+  tbody.innerHTML = list.map(c => `
+    <tr>
+      <td><input type="checkbox"></td>
+      <td style="color:var(--text3);font-size:9px">${c.code}</td>
+      <td><div style="color:var(--cyan);font-size:9.5px">${c.username}</div>${c.ip ? `<div style="font-size:8.5px;color:var(--text3)">${c.ip}</div>` : ''}</td>
+      <td style="color:var(--text)">${c.name}</td>
+      <td>${c.phone}</td>
+      <td>${c.zone}</td>
+      <td>${c.pkg}</td>
+      <td style="font-weight:700;color:${c.billing==='paid'?'var(--green)':'var(--amber)'}">৳${c.bill}</td>
+      <td style="color:${new Date(c.expire)<new Date()?'var(--red)':'var(--text3)'};font-size:9.5px">${c.expire}</td>
+      <td><span class="od" style="background:${c.online?'var(--green)':'var(--text3)'};margin-right:4px"></span>${c.online?'<span style="color:var(--green);font-size:9.5px">Online</span>':'<span style="color:var(--text3);font-size:9.5px">Offline</span>'}</td>
+      <td><div class="badge ${c.status==='active'?'bg':c.status==='blocked'?'br':'ba'}">${c.status}</div></td>
+      <td><div class="badge ${c.billing==='paid'?'bg':c.billing==='unpaid'?'br':'ba'}">${c.billing}</div></td>
+      <td>
+        <div style="display:flex;gap:3px">
+          <button class="btn btn-g" style="padding:2px 5px;font-size:9.5px"><i class="ti ti-eye"></i></button>
+          <button class="btn btn-g" style="padding:2px 5px;font-size:9.5px"><i class="ti ti-edit"></i></button>
+          ${c.status==='blocked'
+            ? `<button class="btn btn-s" style="padding:2px 5px;font-size:9.5px" onclick="unblockClient(${c.id})"><i class="ti ti-player-play"></i></button>`
+            : `<button class="btn btn-d" style="padding:2px 5px;font-size:9.5px" onclick="blockClient(${c.id})"><i class="ti ti-ban"></i></button>`
+          }
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+function filterClients(search) {
+  const filtered = clients.filter(c =>
+    c.name.toLowerCase().includes(search.toLowerCase()) ||
+    c.username.toLowerCase().includes(search.toLowerCase()) ||
+    c.phone.includes(search)
+  );
+  renderClients(filtered);
+}
+function blockClient(id) {
+  const c = clients.find(x => x.id === id);
+  if (!c) return;
+  c.status = 'blocked'; c.online = false;
+  renderClients();
+  document.getElementById('d-blocked').textContent = parseInt(document.getElementById('d-blocked').textContent) + 1;
+  showToast('warning','Client Blocked',`${c.name} blocked on Mikrotik automatically!`);
+  addAutoLog(`Auto blocked: ${c.name} on Mikrotik`, 'ok');
+}
+function unblockClient(id) {
+  const c = clients.find(x => x.id === id);
+  if (!c) return;
+  c.status = 'active'; c.online = true;
+  renderClients();
+  document.getElementById('d-blocked').textContent = Math.max(0, parseInt(document.getElementById('d-blocked').textContent) - 1);
+  document.getElementById('d-online').textContent = parseInt(document.getElementById('d-online').textContent) + 1;
+  showToast('success','Client Unblocked',`${c.name} unblocked on Mikrotik!`);
+  addAutoLog(`Auto unblocked: ${c.name} after payment`, 'ok');
+}
+
+// ============================================================
+// BILLING TABLE
+// ============================================================
+function renderBillings() {
+  const tbody = document.getElementById('billingTbody');
+  if (!tbody) return;
+  tbody.innerHTML = billings.map(b => `
+    <tr>
+      <td><input type="checkbox"></td>
+      <td style="color:var(--cyan)">${b.invoice}</td>
+      <td style="color:var(--text)">${b.client}</td>
+      <td style="font-weight:700">৳${b.amount}</td>
+      <td style="color:var(--green);font-weight:700">৳${b.received}</td>
+      <td style="color:${b.due>0?'var(--red)':'var(--green)'};font-weight:700">৳${b.due}</td>
+      <td style="color:var(--text2)">${b.method||'—'}</td>
+      <td style="color:${new Date(b.dueDate)<new Date()?'var(--red)':'var(--text3)'};font-size:9.5px">${b.dueDate}</td>
+      <td><div class="badge ${b.status==='paid'?'bg':b.status==='unpaid'?'br':b.status==='overdue'?'br':'ba'}">${b.status}</div></td>
+      <td>
+        ${b.status!=='paid'
+          ? `<button class="btn btn-s" style="padding:2px 7px;font-size:9.5px" onclick="collectBill(${b.id})"><i class="ti ti-cash"></i> Collect</button>`
+          : `<button class="btn btn-g" style="padding:2px 7px;font-size:9.5px"><i class="ti ti-download"></i> Invoice</button>`
+        }
+      </td>
+    </tr>
+  `).join('');
+}
+function collectBill(id) {
+  const b = billings.find(x => x.id === id);
+  if (!b) return;
+  const c = clients.find(x => x.name === b.client);
+  b.received = b.amount; b.due = 0; b.status = 'paid'; b.method = 'Cash';
+  if (c) { c.billing = 'paid'; c.status = 'active'; if (c.status === 'blocked') unblockClient(c.id); }
+  renderBillings();
+  showToast('success','Payment Collected!',`৳${b.amount} received from ${b.client}. Auto unblocked on Mikrotik!`);
+  addAutoLog(`Payment ৳${b.amount} collected from ${b.client} — auto unblocked`, 'ok');
+  autoCounts.unblocked++;
+  document.getElementById('aut-unblocked').textContent = autoCounts.unblocked;
+}
+
+// ============================================================
+// PAYMENT GATEWAY
+// ============================================================
+function selectPayMethod(method) {
+  document.querySelectorAll('.pay-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('pm-' + method).classList.add('selected');
+}
+function collectPayment(method) {
+  const amount = document.getElementById('payAmount').value;
+  const clientSel = document.getElementById('payClientSelect').value.split('—')[1]?.trim().split('(')[0]?.trim() || 'Client';
+  if (!amount || amount <= 0) { showToast('error','Error','Please enter amount'); return; }
+  const icons = {cash:'💵',bkash:'📱',nagad:'🔶',rocket:'🟣',bank:'🏦'};
+  showToast('success',`Payment via ${method.toUpperCase()}`,`${icons[method]||''} ৳${amount} collected from ${clientSel}. Auto unblocked on Mikrotik! SMS sent ✓`);
+  const history = document.getElementById('paymentHistory');
+  const now = new Date().toLocaleTimeString('en-BD',{hour:'2-digit',minute:'2-digit'});
+  history.innerHTML = `<div class="le"><div class="lt2">${now}</div><div class="badge bg" style="margin-right:5px">PAID</div><span style="color:var(--text)">${clientSel} — ৳${amount} (${method}) → Auto Unblocked ✓</span></div>` + history.innerHTML;
+  addAutoLog(`Payment ৳${amount} via ${method} — ${clientSel} auto unblocked`, 'ok');
+  autoCounts.sms += 1; document.getElementById('aut-sms').textContent = autoCounts.sms;
+}
+
+// ============================================================
+// AUTOMATION
+// ============================================================
+function simulateAutoBlock() {
+  let count = 0;
+  clients.filter(c => c.billing === 'unpaid' && c.status === 'active').forEach(c => {
+    c.status = 'blocked'; c.online = false; count++;
+  });
+  renderClients();
+  autoCounts.blocked += count;
+  document.getElementById('aut-blocked').textContent = autoCounts.blocked;
+  document.getElementById('d-blocked').textContent = parseInt(document.getElementById('d-blocked').textContent) + count;
+  showToast('warning','Auto Block Complete',`${count} unpaid clients blocked on Mikrotik automatically!`);
+  addAutoLog(`Auto blocked ${count} unpaid clients on Mikrotik`, 'warn');
+  autoCounts.sms += count; document.getElementById('aut-sms').textContent = autoCounts.sms;
+}
+function runAllAutomation() {
+  showToast('info','Automation Running','All automation rules executing...');
+  setTimeout(() => {
+    simulateAutoBlock();
+    addAutoLog('Bill reminders sent to 231 clients', 'info');
+    addAutoLog('OLT sync: 5 online, 1 offline', 'ok');
+    addAutoLog('Stock check: 3 items low — email alert sent', 'warn');
+    autoCounts.bills += 0; autoCounts.sms += 231;
+    document.getElementById('aut-sms').textContent = autoCounts.sms;
+    document.getElementById('aut-bills').textContent = autoCounts.bills;
+    showToast('success','Automation Complete','All 10 automation rules executed!');
+  }, 1500);
+}
+function addAutoLog(msg, type = 'info') {
+  const log = document.getElementById('autoLog');
+  if (!log) return;
+  const time = new Date().toLocaleTimeString('en-BD',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const icons = {ok:'✓',warn:'⚠',err:'✕',info:'🔄'};
+  const entry = document.createElement('div');
+  entry.className = 'entry';
+  entry.innerHTML = `<div class="time">${time}</div><div class="${type}">${icons[type]||''} ${msg}</div>`;
+  log.insertBefore(entry, log.firstChild);
+}
+
+// ============================================================
+// ADD CLIENT MODAL
+// ============================================================
+function showAddClient() { document.getElementById('addClientModal').style.display = 'flex'; }
+function closeModal() { document.getElementById('addClientModal').style.display = 'none'; }
+function saveClient() {
+  const name = document.getElementById('nc-name').value;
+  const phone = document.getElementById('nc-phone').value;
+  const user = document.getElementById('nc-user').value;
+  const bill = document.getElementById('nc-bill').value;
+  if (!name || !phone || !user || !bill) { showToast('error','Error','Please fill all required fields'); return; }
+  const newClient = {
+    id: clients.length + 1,
+    code: String(parseInt(clients[clients.length-1]?.code||0)+1).padStart(4,'0'),
+    username: user, ip: '', name: name.toUpperCase(), phone,
+    zone: 'Agrabad', pkg: '20Mbps/20M', bill: parseInt(bill),
+    expire: new Date(Date.now()+30*24*60*60*1000).toISOString().split('T')[0],
+    online: false, status: 'active', billing: 'unpaid'
+  };
+  clients.unshift(newClient);
+  renderClients();
+  closeModal();
+  document.getElementById('c-total').textContent = clients.length;
+  const d = document.getElementById('d-total'); if(d) d.textContent = clients.length;
+  showToast('success','Client Added!',`${name} added successfully & synced to Mikrotik!`);
+  addAutoLog(`New client added: ${name} — synced to Mikrotik`, 'ok');
+}
+
+// ============================================================
+// BARCODE
+// ============================================================
+function genBC() {
+  try {
+    const v = document.getElementById('bcSerial')?.value || 'SN-2026-001234';
+    const it = document.getElementById('barcodeItem');
+    const lb = document.getElementById('bcLabel');
+    if (lb && it) lb.textContent = it.options[it.selectedIndex].text;
+    if (typeof JsBarcode !== 'undefined') JsBarcode('#bcsvg', v, {format:'CODE128',width:1.5,height:45,displayValue:true,fontSize:10,margin:4,background:'#ffffff',lineColor:'#000000'});
+  } catch(e) {}
+}
+function printBC() {
+  const svg = document.getElementById('bcsvg');
+  const it = document.getElementById('barcodeItem');
+  const lb = it ? it.options[it.selectedIndex].text : 'Item';
+  const sn = document.getElementById('bcSerial')?.value;
+  const w = window.open('','_blank','width=400,height:300');
+  w.document.write(`<html><head><title>Label</title></head><body style="text-align:center;font-family:sans-serif;padding:15px"><p style="font-size:12px;font-weight:700;margin-bottom:5px">${lb}</p>${svg.outerHTML}<p style="font-size:10px;margin-top:4px">${sn}</p><script>window.onload=function(){window.print();}<\/script></body></html>`);
+  w.document.close();
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(type, title, msg) {
+  const icons = {success:'ti-circle-check',error:'ti-circle-x',warning:'ti-alert-triangle',info:'ti-info-circle'};
+  const colors = {success:'var(--green)',error:'var(--red)',warning:'var(--amber)',info:'var(--blue)'};
+  const wrap = document.getElementById('toastWrap');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  toast.innerHTML = `<i class="ti ${icons[type]}" style="color:${colors[type]}"></i><div><div class="t-title">${title}</div><div class="t-msg">${msg}</div></div>`;
+  wrap.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+// ============================================================
+// CHARTS
+// ============================================================
+const chartInstances = {};
+function initCharts() {
+  const gc = '#1a2d4a', tc = '#445c80';
+  const sc = {x:{ticks:{color:tc,font:{size:9}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:9}},grid:{color:gc}}};
+  const mkChart = (id, cfg) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (chartInstances[id]) { chartInstances[id].destroy(); }
+    chartInstances[id] = new Chart(el, cfg);
+  };
+  mkChart('growthChart',{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'New',data:[45,62,38,75,58,30],backgroundColor:'#1d4ed8',borderRadius:5,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:sc}});
+  mkChart('probChart',{type:'doughnut',data:{labels:['Connectivity','BW Problem'],datasets:[{data:[50,50],backgroundColor:['#3b82f6','#14b8a6'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},cutout:'65%'}});
+  mkChart('payChart',{type:'bar',data:{labels:['Cash','bKash','Nagad','Rocket','Bank'],datasets:[{label:'Amount',data:[120000,95000,75000,40000,30000],backgroundColor:['#10b981','#e2136e','#f6871f','#8c2d91','#3b82f6'],borderRadius:5}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:sc}});
+  mkChart('accChart',{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Income',data:[380,420,390,460,440,420],backgroundColor:'#10b981',borderRadius:4},{label:'Expense',data:[220,240,210,270,250,230],backgroundColor:'#1d4ed8',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:sc}});
+  mkChart('revChart',{type:'bar',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Revenue',data:[380,420,390,460,440,420],backgroundColor:'#10b981',borderRadius:4},{label:'Expense',data:[220,240,210,270,250,230],backgroundColor:'#1d4ed8',borderRadius:4}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:tc,font:{size:9}},grid:{color:gc}},y:{ticks:{color:tc,font:{size:9},callback:v=>'৳'+v+'K'},grid:{color:gc}}}}});
+  mkChart('trendChart',{type:'line',data:{labels:['Jan','Feb','Mar','Apr','May','Jun'],datasets:[{label:'Clients',data:[2180,2225,2263,2290,2305,2335],borderColor:'#8b5cf6',tension:.4,pointRadius:4,fill:true,backgroundColor:'rgba(139,92,246,.1)',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:sc}});
+  genBC();
+}
+
+// ============================================================
+// LIVE UPDATES SIMULATION
+// ============================================================
+function startLiveUpdates() {
+  // Live clock
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('tb-title'); // placeholder to keep interval
+  }, 1000);
+
+  // Simulate live bandwidth
+  setInterval(() => {
+    const dl = (8 + Math.random() * 4).toFixed(1);
+    const ul = (3 + Math.random() * 2).toFixed(1);
+    const dlEl = document.getElementById('d-bw-dl');
+    const ulEl = document.getElementById('d-bw-ul');
+    if (dlEl) dlEl.textContent = dl + ' Gbps';
+    if (ulEl) ulEl.textContent = ul + ' Gbps';
+  }, 5000);
+
+  // Simulate random auto log entries
+  const autoMessages = [
+    {msg:'Mikrotik sync: checking 2,335 clients', type:'info'},
+    {msg:'OLT-01 Agrabad: all ONUs normal', type:'ok'},
+    {msg:'Bill reminder SMS queue: 15 pending', type:'info'},
+    {msg:'OLT-03 Nasirabad: signal degrading on port 0/3', type:'warn'},
+    {msg:'New client ASN2336 registered — synced to Mikrotik', type:'ok'},
+  ];
+  let idx = 0;
+  setInterval(() => {
+    const m = autoMessages[idx % autoMessages.length];
+    addAutoLog(m.msg, m.type);
+    idx++;
+  }, 8000);
+
+  // Random OLT alert
+  setTimeout(() => {
+    showToast('warning','🔴 OLT Alert','OLT-03 Nasirabad signal weak! Auto monitoring active.');
+  }, 5000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(initCharts, 500);
+});
+</script>
+</body>
+</html>
