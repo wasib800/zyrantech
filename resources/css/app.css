@@ -165,7 +165,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 
 /* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
 .modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.5rem;width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5)}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
 .modal-head h3{font-size:15px;font-weight:700}
