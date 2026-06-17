@@ -15,6 +15,9 @@ Route::post('/mikrotik/{id}/sync', [MikrotikController::class, 'sync']);
 
 // Clients
 Route::get('/clients', [ClientController::class, 'index']);
+Route::get('/clients/{id}', [ClientController::class, 'show']);
+Route::put('/clients/{id}', [ClientController::class, 'update']);
+Route::delete('/clients/{id}', [ClientController::class, 'destroy']);
 Route::post('/clients/{id}/block', [MikrotikController::class, 'block']);
 Route::post('/clients/{id}/unblock', [MikrotikController::class, 'unblock']);
 

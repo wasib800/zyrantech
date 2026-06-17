@@ -33,9 +33,9 @@ export default function MikrotikServers() {
             setForm({ name: '', ip_address: '', port: 256, username: '', password: '' });
             await loadServers();
             if (res.data.connected) {
-                alert('✅ Server added and connected successfully!');
+                alert('✅ Server added and connected!');
             } else {
-                alert('⚠️ Server added but could not connect. Check IP/credentials.');
+                alert('⚠️ Added but could not connect. Check IP/credentials.');
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to add server');
@@ -57,20 +57,27 @@ export default function MikrotikServers() {
         if (!confirm(`Import all clients from "${name}"?\n\nThis will import:\n• PPPoE clients\n• Static IP (Queue) clients`)) return;
         setImporting(id);
         try {
-            // Import PPPoE clients
             const pppoe = await api.post(`/mikrotik/${id}/import`);
-            // Import Static IP (Queue) clients
             const queue = await api.post(`/mikrotik/${id}/import-queue`);
             alert(
                 `✅ Import Complete!\n\n` +
-                `PPPoE Clients: ${pppoe.data.count || 0}\n` +
-                `Static IP Clients: ${queue.data.imported || 0}\n` +
+                `PPPoE: ${pppoe.data.count || 0}\n` +
+                `Static IP: ${queue.data.imported || 0}\n` +
                 `Skipped: ${queue.data.skipped || 0}`
             );
+        } catch(err) {
+            alert('❌ Import failed');
+        } finally { setImporting(null); }
+    };
+
+    const handleDelete = async (id, name) => {
+        if (!confirm(`Delete "${name}"? All clients from this server will also be deleted!`)) return;
+        try {
+            await api.delete(`/mikrotik/${id}`);
             await loadServers();
         } catch(err) {
-            alert('❌ Import failed: ' + (err.response?.data?.message || err.message));
-        } finally { setImporting(null); }
+            alert('❌ Delete failed');
+        }
     };
 
     return (
@@ -82,7 +89,6 @@ export default function MikrotikServers() {
                 </button>
             </div>
 
-            {/* Stats */}
             <div className="stats-grid" style={{gridTemplateColumns:'repeat(3,1fr)'}}>
                 <div className="stat-card blue">
                     <div className="stat-top"><div className="stat-icon blue-bg">🖥️</div></div>
@@ -101,7 +107,6 @@ export default function MikrotikServers() {
                 </div>
             </div>
 
-            {/* Server Table */}
             <div className="card">
                 {loading ? (
                     <div className="loading-screen"><div className="spinner"></div> Loading...</div>
@@ -137,19 +142,14 @@ export default function MikrotikServers() {
                                     </td>
                                     <td>
                                         <div className="action-group">
-                                            <button
-                                                className="btn btn-success btn-xs"
-                                                onClick={() => handleSync(s.id, s.name)}
-                                                disabled={syncing === s.id}
-                                            >
+                                            <button className="btn btn-success btn-xs" onClick={() => handleSync(s.id, s.name)} disabled={syncing === s.id}>
                                                 {syncing === s.id ? '⏳' : '🔄 Sync'}
                                             </button>
-                                            <button
-                                                className="btn btn-ghost btn-xs"
-                                                onClick={() => handleImport(s.id, s.name)}
-                                                disabled={importing === s.id}
-                                            >
-                                                {importing === s.id ? '⏳ Importing...' : '📥 Import All'}
+                                            <button className="btn btn-ghost btn-xs" onClick={() => handleImport(s.id, s.name)} disabled={importing === s.id}>
+                                                {importing === s.id ? '⏳' : '📥 Import'}
+                                            </button>
+                                            <button className="btn btn-danger btn-xs" onClick={() => handleDelete(s.id, s.name)}>
+                                                🗑️
                                             </button>
                                         </div>
                                     </td>
@@ -159,11 +159,10 @@ export default function MikrotikServers() {
                     </table>
                 )}
                 {servers.length === 0 && !loading && (
-                    <div className="no-data">No servers added yet. Click "Add Server" to get started!</div>
+                    <div className="no-data">No servers added. Click "Add Server" to get started!</div>
                 )}
             </div>
 
-            {/* Add Server Modal */}
             {showModal && (
                 <div className="modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="modal" onClick={e => e.stopPropagation()}>
@@ -176,59 +175,27 @@ export default function MikrotikServers() {
                             <div className="form-grid">
                                 <div className="form-group">
                                     <label>Server Name *</label>
-                                    <input
-                                        className="fi"
-                                        value={form.name}
-                                        onChange={e => setForm({...form, name: e.target.value})}
-                                        placeholder="e.g. Access-Server"
-                                        required
-                                    />
+                                    <input className="fi" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="e.g. Main Router" required />
                                 </div>
                                 <div className="form-group">
                                     <label>IP Address *</label>
-                                    <input
-                                        className="fi"
-                                        value={form.ip_address}
-                                        onChange={e => setForm({...form, ip_address: e.target.value})}
-                                        placeholder="e.g. 103.224.55.88"
-                                        required
-                                    />
+                                    <input className="fi" value={form.ip_address} onChange={e => setForm({...form, ip_address: e.target.value})} placeholder="e.g. 103.224.55.88" required />
                                 </div>
                                 <div className="form-group">
                                     <label>API Port *</label>
-                                    <input
-                                        className="fi"
-                                        type="number"
-                                        value={form.port}
-                                        onChange={e => setForm({...form, port: parseInt(e.target.value)})}
-                                        placeholder="256"
-                                        required
-                                    />
+                                    <input className="fi" type="number" value={form.port} onChange={e => setForm({...form, port: parseInt(e.target.value)})} placeholder="256" required />
                                 </div>
                                 <div className="form-group">
                                     <label>Username *</label>
-                                    <input
-                                        className="fi"
-                                        value={form.username}
-                                        onChange={e => setForm({...form, username: e.target.value})}
-                                        placeholder="e.g. admin"
-                                        required
-                                    />
+                                    <input className="fi" value={form.username} onChange={e => setForm({...form, username: e.target.value})} placeholder="e.g. admin" required />
                                 </div>
                                 <div className="form-group" style={{gridColumn:'span 2'}}>
                                     <label>Password *</label>
-                                    <input
-                                        className="fi"
-                                        type="password"
-                                        value={form.password}
-                                        onChange={e => setForm({...form, password: e.target.value})}
-                                        placeholder="••••••••"
-                                        required
-                                    />
+                                    <input className="fi" type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} placeholder="••••••••" required />
                                 </div>
                             </div>
                             <div style={{background:'rgba(59,130,246,.1)',border:'1px solid rgba(59,130,246,.2)',borderRadius:'7px',padding:'.65rem',fontSize:'10.5px',color:'var(--text2)',marginBottom:'1rem'}}>
-                                ℹ️ API service must be enabled on Mikrotik: IP → Services → api
+                                ℹ️ Make sure WWW service is enabled on Mikrotik (IP → Services → www) for REST API access.
                             </div>
                             <div className="modal-footer">
                                 <button type="button" className="btn btn-ghost" onClick={() => setShowModal(false)}>Cancel</button>

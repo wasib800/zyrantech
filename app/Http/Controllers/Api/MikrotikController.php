@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MikrotikServer;
 use App\Models\Client;
+use App\Models\OLTUser;
 use App\Services\MikrotikService;
 use Illuminate\Http\Request;
 
@@ -19,13 +20,11 @@ class MikrotikController extends Controller
         );
     }
 
-    // Server list
     public function index()
     {
         return response()->json(MikrotikServer::all());
     }
 
-    // Add server
     public function store(Request $request)
     {
         $request->validate([
@@ -48,49 +47,76 @@ class MikrotikController extends Controller
         ], 201);
     }
 
-    // Sync online clients
+    public function destroy($id)
+    {
+        MikrotikServer::findOrFail($id)->delete();
+        return response()->json(['message' => 'Server deleted!']);
+    }
+
     public function sync($id)
-{
-    $server = MikrotikServer::findOrFail($id);
-    $mk = $this->getMk($server);
+    {
+        $server = MikrotikServer::findOrFail($id);
+        $mk = $this->getMk($server);
 
-    // PPPoE active users
-    $pppoeOnline = $mk->syncOnlineStatus();
+        // PPPoE active users
+        $pppoeOnline = $mk->syncOnlineStatus();
 
-    // Static IP online (ARP table)
-    $arpUsers = $mk->request('/ip/arp');
-    $arpOnlineIPs = array_column($arpUsers, 'address');
+        // ARP table — IP + MAC
+        $arpUsers = $mk->request('/ip/arp');
+        $arpOnlineIPs = array_column($arpUsers, 'address');
 
-    // Mark PPPoE online
-    Client::where('mikrotik_server_id', $id)
-        ->whereIn('username', $pppoeOnline)
-        ->update(['is_online' => true, 'last_online_at' => now()]);
+        // Update MAC address + OLT match via ARP
+        foreach ($arpUsers as $arp) {
+            if (!empty($arp['address']) && !empty($arp['mac-address'])) {
+                $mac = strtoupper($arp['mac-address']);
 
-    // Mark Static IP online by IP
-    Client::where('mikrotik_server_id', $id)
-        ->whereIn('ip_address', $arpOnlineIPs)
-        ->update(['is_online' => true, 'last_online_at' => now()]);
+                Client::where('mikrotik_server_id', $id)
+                    ->where('ip_address', $arp['address'])
+                    ->update(['mac_address' => $mac]);
 
-    // Mark rest offline
-    $allOnlineIPs = $arpOnlineIPs;
-    Client::where('mikrotik_server_id', $id)
-        ->whereNotIn('username', $pppoeOnline)
-        ->whereNotIn('ip_address', $allOnlineIPs)
-        ->update(['is_online' => false]);
+                // Match OLT ONU by MAC
+                $oltUser = OLTUser::where('mac_address', $mac)->first();
+                if ($oltUser) {
+                    Client::where('mikrotik_server_id', $id)
+                        ->where('ip_address', $arp['address'])
+                        ->update(['olt_user_id' => $oltUser->id]);
+                }
+            }
+        }
 
-    $server->update(['is_connected' => true, 'last_synced_at' => now()]);
+        // Mark PPPoE online
+        Client::where('mikrotik_server_id', $id)
+            ->whereIn('username', $pppoeOnline)
+            ->update(['is_online' => true, 'last_online_at' => now()]);
 
-    $totalOnline = Client::where('mikrotik_server_id', $id)
-        ->where('is_online', true)->count();
+        // Mark Static IP online
+        Client::where('mikrotik_server_id', $id)
+            ->whereIn('ip_address', $arpOnlineIPs)
+            ->update(['is_online' => true, 'last_online_at' => now()]);
 
-    return response()->json([
-        'message' => 'Synced!',
-        'online_count' => $totalOnline,
-        'pppoe_online' => count($pppoeOnline),
-        'static_online' => count($arpOnlineIPs),
-    ]);
-}
-    // Import PPPoE clients
+        // Mark rest offline
+        Client::where('mikrotik_server_id', $id)
+            ->whereNotIn('username', $pppoeOnline)
+            ->whereNotIn('ip_address', $arpOnlineIPs)
+            ->update(['is_online' => false, 'last_offline_at' => now()]);
+
+        $server->update(['is_connected' => true, 'last_synced_at' => now()]);
+
+        $totalOnline = Client::where('mikrotik_server_id', $id)
+            ->where('is_online', true)->count();
+
+        $oltMatched = Client::where('mikrotik_server_id', $id)
+            ->whereNotNull('olt_user_id')->count();
+
+        return response()->json([
+            'message'      => 'Synced!',
+            'online_count' => $totalOnline,
+            'pppoe_online' => count($pppoeOnline),
+            'static_online'=> count($arpOnlineIPs),
+            'olt_matched'  => $oltMatched,
+        ]);
+    }
+
     public function import($id)
     {
         $server = MikrotikServer::findOrFail($id);
@@ -117,7 +143,6 @@ class MikrotikController extends Controller
         ]);
     }
 
-    // Import Static IP (Queue) clients
     public function importQueue($id)
     {
         $server = MikrotikServer::findOrFail($id);
@@ -162,23 +187,30 @@ class MikrotikController extends Controller
         ]);
     }
 
-    // Block client
     public function block(Request $request, $id)
     {
         $client = Client::findOrFail($id);
         $mk = $this->getMk($client->server);
         $mk->blockQueueUser($client->username);
-        $client->update(['status' => 'blocked', 'is_online' => false]);
+        $client->update([
+            'status' => 'blocked',
+            'is_online' => false,
+            'blocked_at' => now(),
+            'blocked_by' => 'Admin',
+        ]);
         return response()->json(['message' => 'Client blocked on Mikrotik!']);
     }
 
-    // Unblock client
     public function unblock(Request $request, $id)
     {
         $client = Client::findOrFail($id);
         $mk = $this->getMk($client->server);
         $mk->unblockQueueUser($client->username, $client->profile ?? '10000000/10000000');
-        $client->update(['status' => 'active']);
+        $client->update([
+            'status' => 'active',
+            'blocked_at' => null,
+            'blocked_by' => null,
+        ]);
         return response()->json(['message' => 'Client unblocked on Mikrotik!']);
     }
 }

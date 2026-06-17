@@ -1,10 +1,20 @@
 <?php
-$ip = '192.168.45.2';
-$com = 'nmscloud';
+require __DIR__ . '/vendor/autoload.php';
 
-$rx = @snmpwalk($ip, $com, '1.3.6.1.4.1.3320.101.10.1.1.80') ?: [];
+$app = require __DIR__ . '/bootstrap/app.php';
+$app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-echo "First 10 raw RX values:\n";
-foreach (array_slice($rx, 0, 10) as $i => $v) {
-    echo "ONU $i: $v\n";
+$client = \App\Models\Client::whereNotNull('mac_address')->first();
+echo "Client MAC: " . $client->mac_address . "\n";
+
+$olt = \App\Models\OLTUser::where('mac_address', $client->mac_address)->first();
+echo "OLT match: " . ($olt ? $olt->id : 'NOT FOUND') . "\n";
+
+$oltUpper = \App\Models\OLTUser::where('mac_address', strtoupper($client->mac_address))->first();
+echo "OLT upper: " . ($oltUpper ? $oltUpper->id : 'NOT FOUND') . "\n";
+
+// Show first 3 OLT MACs
+$olts = \App\Models\OLTUser::take(3)->get();
+foreach ($olts as $o) {
+    echo "OLT MAC: " . $o->mac_address . "\n";
 }
