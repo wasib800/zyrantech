@@ -29,9 +29,8 @@ export default function Layout() {
                 <Link to="/mikrotik" className={`nav-item ${isActive('/mikrotik')}`}>
                     <span className="nav-icon">🖥️</span> Mikrotik Server
                 </Link>
-                <Link to="/olt" className="nav-item disabled">
+                <Link to="/olt" className={`nav-item ${isActive('/olt')}`}>
                     <span className="nav-icon">📡</span> OLT Management
-                    <span className="nav-badge soon">Soon</span>
                 </Link>
                 <Link to="/network" className="nav-item disabled">
                     <span className="nav-icon">🌐</span> Network Diagram
