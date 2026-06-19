@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 
 export default function Layout() {
     const location = useLocation();
-    const isActive = (path) => location.pathname.startsWith(path) ? 'active' : '';
+    const isActive = (path) => location.pathname === path ? 'active' : '';
+    const startsWith = (path) => location.pathname.startsWith(path) ? 'active' : '';
+    const [mikrotikOpen, setMikrotikOpen] = useState(location.pathname.startsWith('/mikrotik'));
+    const [oltOpen, setOltOpen] = useState(location.pathname.startsWith('/olt'));
+
+    const Arrow = ({open}) => (
+        <span style={{marginLeft:'auto',fontSize:'10px',transition:'transform 0.2s',transform:open?'rotate(90deg)':'rotate(0deg)',display:'inline-block'}}>▶</span>
+    );
 
     return (
         <div className="app-layout">
@@ -19,19 +27,58 @@ export default function Layout() {
                 <Link to="/dashboard" className={`nav-item ${isActive('/dashboard')}`}>
                     <span className="nav-icon">📊</span> Dashboard
                 </Link>
-                <Link to="/clients" className={`nav-item ${isActive('/clients')}`}>
+                <Link to="/clients" className={`nav-item ${startsWith('/clients')}`}>
                     <span className="nav-icon">👥</span> Client Management
                 </Link>
                 <Link to="/billing" className="nav-item disabled">
                     <span className="nav-icon">🧾</span> Billing
                     <span className="nav-badge soon">Soon</span>
                 </Link>
-                <Link to="/mikrotik" className={`nav-item ${isActive('/mikrotik')}`}>
+
+                {/* Mikrotik Server */}
+                <div className={`nav-item nav-parent ${location.pathname.startsWith('/mikrotik')?'active':''}`} onClick={() => setMikrotikOpen(!mikrotikOpen)}>
                     <span className="nav-icon">🖥️</span> Mikrotik Server
-                </Link>
-                <Link to="/olt" className={`nav-item ${isActive('/olt')}`}>
+                    <Arrow open={mikrotikOpen} />
+                </div>
+                {mikrotikOpen && (
+                    <div className="nav-submenu">
+                        <Link to="/mikrotik" className={`nav-item nav-sub ${isActive('/mikrotik')}`}>
+                            <span className="nav-icon">🖥️</span> Server List
+                        </Link>
+                        <Link to="/mikrotik/import" className={`nav-item nav-sub ${isActive('/mikrotik/import')}`}>
+                            <span className="nav-icon">📥</span> Import From Mikrotik
+                        </Link>
+                        <Link to="/mikrotik/bulk-import" className={`nav-item nav-sub ${isActive('/mikrotik/bulk-import')}`}>
+                            <span className="nav-icon">📦</span> Bulk Client Import
+                        </Link>
+                        <Link to="/mikrotik/backup" className={`nav-item nav-sub ${isActive('/mikrotik/backup')}`}>
+                            <span className="nav-icon">💾</span> Server Backup
+                        </Link>
+                    </div>
+                )}
+
+                {/* OLT Management */}
+                <div className={`nav-item nav-parent ${location.pathname.startsWith('/olt')?'active':''}`} onClick={() => setOltOpen(!oltOpen)}>
                     <span className="nav-icon">📡</span> OLT Management
-                </Link>
+                    <Arrow open={oltOpen} />
+                </div>
+                {oltOpen && (
+                    <div className="nav-submenu">
+                        <Link to="/olt" className={`nav-item nav-sub ${isActive('/olt')}`}>
+                            <span className="nav-icon">📡</span> OLT List
+                        </Link>
+                        <Link to="/olt/users" className={`nav-item nav-sub ${isActive('/olt/users')}`}>
+                            <span className="nav-icon">📋</span> OLT Users
+                        </Link>
+                        <Link to="/olt/signal" className={`nav-item nav-sub ${isActive('/olt/signal')}`}>
+                            <span className="nav-icon">📊</span> Signal Monitor
+                        </Link>
+                        <Link to="/olt/ports" className={`nav-item nav-sub ${isActive('/olt/ports')}`}>
+                            <span className="nav-icon">🔌</span> Port Status
+                        </Link>
+                    </div>
+                )}
+
                 <Link to="/network" className="nav-item disabled">
                     <span className="nav-icon">🌐</span> Network Diagram
                     <span className="nav-badge soon">Soon</span>

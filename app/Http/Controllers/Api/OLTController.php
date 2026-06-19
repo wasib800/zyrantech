@@ -1,6 +1,5 @@
 <?php
 namespace App\Http\Controllers\Api;
-
 use App\Http\Controllers\Controller;
 use App\Models\OLT;
 use App\Services\OLTService;
@@ -10,7 +9,12 @@ class OLTController extends Controller
 {
     private function getService($olt): OLTService
     {
-        return new OLTService($olt->ip_address, $olt->community, $olt->port);
+        return new OLTService(
+            $olt->ip_address,
+            $olt->community,
+            $olt->port,
+            $olt->olt_type ?? 'BDCOM_GPON'
+        );
     }
 
     public function index()
@@ -29,7 +33,6 @@ class OLTController extends Controller
         $olt = OLT::create($request->all());
         $svc = $this->getService($olt);
         $connected = $svc->testConnection();
-
         $olt->update(['status' => $connected ? 'online' : 'offline']);
 
         return response()->json([
@@ -47,10 +50,13 @@ class OLTController extends Controller
 
     public function stats($id)
     {
-        $olt = OLT::findOrFail($id);
-        $svc = $this->getService($olt);
+        $olt   = OLT::findOrFail($id);
+        $svc   = $this->getService($olt);
         $stats = $svc->getStats();
-        $olt->update(['status' => $stats['online'] > 0 ? 'online' : 'offline', 'last_synced_at' => now()]);
+        $olt->update([
+            'status'         => $stats['total'] > 0 ? 'online' : 'offline',
+            'last_synced_at' => now(),
+        ]);
         return response()->json(['olt' => $olt, 'stats' => $stats]);
     }
 
@@ -63,13 +69,16 @@ class OLTController extends Controller
 
     public function sync($id)
     {
-        $olt = OLT::findOrFail($id);
-        $svc = $this->getService($olt);
+        $olt  = OLT::findOrFail($id);
+        $svc  = $this->getService($olt);
         $data = $svc->getONUList();
 
         foreach ($data['onus'] as $onu) {
             \App\Models\OLTUser::updateOrCreate(
-                ['o_l_t_id' => $id, 'mac_address' => $onu['mac'] ?: 'ONU-' . $onu['index']],
+                [
+                    'o_l_t_id'    => $id,
+                    'mac_address' => $onu['mac'] ?: 'ONU-' . $onu['index'],
+                ],
                 [
                     'name'           => $onu['name'],
                     'rx_power'       => $onu['rx_power'],
@@ -80,7 +89,13 @@ class OLTController extends Controller
             );
         }
 
-        $olt->update(['status' => 'online', 'last_synced_at' => now()]);
+        $olt->update([
+            'status'         => $data['total'] > 0 ? 'online' : 'offline',
+            'last_synced_at' => now(),
+            'total_onus'     => $data['total'],
+            'online_onus'    => $data['online'],
+            'offline_onus'   => $data['offline'],
+        ]);
 
         return response()->json([
             'message' => 'Synced ' . count($data['onus']) . ' ONUs!',
